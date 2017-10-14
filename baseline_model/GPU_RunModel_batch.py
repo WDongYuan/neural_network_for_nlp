@@ -28,7 +28,7 @@ def save_model(state, filename='saved_model.out'):
 def TrainModel(train_data,word_em,D,load_model=""):
 
 	global UNKNOWNWORD
-	hidden_size = 200
+	hidden_size = 500
 	embedding_size = D
 	epoch_num = 100
 	direction = 2
@@ -43,7 +43,7 @@ def TrainModel(train_data,word_em,D,load_model=""):
 	cudnn.benchmark = True
 	###########################################################
 	model = ModelBatch(embedding_size,hidden_size,direction,word_em,batch_size,context_max_length,question_max_length)
-	optimizer = optim.SGD(model.parameters(), lr=0.1)
+	optimizer = optim.SGD(model.parameters(), lr=0.01)
 
 	model_saved_name = ""
 	try:
