@@ -133,7 +133,7 @@ def TrainModel(train_data,word_em,D,load_model=""):
 			start_acc /= batch_size
 			start_order /= batch_size
 			start_pro /= batch_size
-			max_pro /= start_pro
+			max_pro /= batch_size
 
 
 			# predict_end_score = my_end.data[0].numpy()
