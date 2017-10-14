@@ -73,7 +73,6 @@ def TrainModel(train_data,word_em,D,load_model,model_mode,learning_rate,hidden_s
 		trained_sample = loaded_data['trained_sample']
 		print(str(cur_epoch)+" epoches were train.")
 		print(str(trained_sample)+" samples were trained.")
-		cur_epoch += 1
 		# print("Loading done!")
 
 	# CE = nn.CrossEntropyLoss()
@@ -88,7 +87,7 @@ def TrainModel(train_data,word_em,D,load_model,model_mode,learning_rate,hidden_s
 	for epoch in range(epoch_num):
 		print("Epoch "+str(epoch))
 
-		cur_epoch += epoch
+		cur_epoch += 1
 		sample_counter = trained_sample
 		trained_sample = 0
 
