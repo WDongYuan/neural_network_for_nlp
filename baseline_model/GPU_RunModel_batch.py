@@ -151,7 +151,7 @@ if __name__=="__main__":
 	##Read train data from saved file
 	print("Reading data...")
 	train_data = []
-	train_data_file = open("./data/train_data.out")
+	train_data_file = open("./data/train_data.out",encoding='utf-8')
 	qa_object = QA()
 	while qa_object.ReadFromFile(train_data_file):
 		train_data.append(qa_object)
