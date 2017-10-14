@@ -18,7 +18,7 @@ UNKNOWNWORD = "unknownword"
 class SoftmaxAttentionModel(nn.Module):
 	def __init__(self,embedding_size,hidden_size,direction,word_em,batch_size,context_max_length,question_max_length):
 		super(SoftmaxAttentionModel, self).__init__()
-		self.model_name = "GPU_model"
+		self.model_name = "softmax_attention"
 
 		self.word_em = word_em
 		self.batch_size = batch_size
@@ -38,7 +38,7 @@ class SoftmaxAttentionModel(nn.Module):
 		self.passage_lstm = nn.LSTM(embedding_size, hidden_size,bidirectional=bidirectional_flag,batch_first=True)
 		self.question_lstm = nn.LSTM(embedding_size, hidden_size,bidirectional=bidirectional_flag,batch_first=True)
 
-		# self.start_att_linear1 = nn.Linear(3*self.direction*hidden_size,hidden_size)
+		self.start_att_linear = nn.Linear(self.question_max_length,1)
 		# self.start_att_tanh = nn.Tanh()
 		# self.start_att_linear2 = nn.Linear(hidden_size,1)
 
@@ -74,36 +74,9 @@ class SoftmaxAttentionModel(nn.Module):
 		q_lstm_out, (self.q_hidden,self.q_c_n) = self.question_lstm(question_embedding,(self.q_hidden,self.q_c_n))
 		p_lstm_out, (self.p_hidden,self.p_c_n) = self.passage_lstm(passage_embedding, (self.p_hidden,self.p_c_n))
 
-		q_hidden_list_batch = q_lstm_out
-		p_hidden_list_batch = p_lstm_out
-
-		all_question_length = [i*self.question_max_length+question_length[i] for i in range(len(question_length))]
-		all_passage_length = [i*self.passage_max_length+passage_length[i] for i in range(len(passage_length))]
-		
-		tmp_q = q_hidden_list_batch.contiguous().view(-1,self.direction*self.hidden_size)
-		tmp_p = p_hidden_list_batch.contiguous().view(-1,self.direction*self.hidden_size)
-
-		###########################################################
-		#GPU OPTION
-		###########################################################
-		question_last_hidden = torch.index_select(tmp_q,0,Variable(torch.LongTensor(question_length).cuda(async=True)))
-		passage_last_hidden = torch.index_select(tmp_p,0,Variable(torch.LongTensor(passage_length).cuda(async=True)))
-		###########################################################
-		# question_last_hidden = torch.index_select(tmp_q,0,Variable(torch.LongTensor(all_question_length)))
-		# passage_last_hidden = torch.index_select(tmp_p,0,Variable(torch.LongTensor(all_passage_length)))
-		###########################################################
-
-		##Concatanate 2 direction
-		q_hidden_new = question_last_hidden.view(self.batch_size,1,self.direction*self.hidden_size).expand(self.batch_size,self.passage_max_length,self.direction*self.hidden_size)
-		p_hidden_new = passage_last_hidden.view(self.batch_size,1,self.direction*self.hidden_size).expand(self.batch_size,self.passage_max_length,self.direction*self.hidden_size)
-
-		##Concatanate question,passage and each hidden state in passage
-		concat_q_p_h = torch.cat((p_hidden_list_batch,q_hidden_new,p_hidden_new),2)
-		start_hidden_score = self.start_att_linear2(self.start_att_tanh(self.start_att_linear1(concat_q_p_h)))
-		start_pro = self.softmax(start_hidden_score.view(self.batch_size,-1))
-
-		# end_hidden_score = self.end_att_linear2(self.end_att_tanh(self.end_att_linear1(concat_q_p_h)))
-		# end_pro = self.softmax(end_hidden_score.view(self.batch_size,-1))
+		batch_full_align = torch.bmm(p_lstm_out,torch.transpose(q_lstm_out,1,2))
+		start_align_score = self.start_att_linear(batch_full_align)
+		start_pro = self.softmax(start_align_score.view(self.batch_size,-1))
 
 		return start_pro,passage_length
 

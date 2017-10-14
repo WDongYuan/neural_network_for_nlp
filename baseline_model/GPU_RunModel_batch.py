@@ -10,6 +10,7 @@ import random
 import time
 import sys
 from GPU_ModelBatch import *
+from SoftmaxAttention import *
 ###########################################################
 #GPU OPTION
 ###########################################################
@@ -25,10 +26,10 @@ def GetOrder(val,arr):
 def save_model(state, filename='saved_model.out'):
     torch.save(state, filename)
 
-def TrainModel(train_data,word_em,D,load_model=""):
+def TrainModel(train_data,word_em,D,load_model,model_mode):
 
 	global UNKNOWNWORD
-	hidden_size = 500
+	hidden_size = 200
 	embedding_size = D
 	epoch_num = 100
 	direction = 2
@@ -42,8 +43,15 @@ def TrainModel(train_data,word_em,D,load_model=""):
 	###########################################################
 	cudnn.benchmark = True
 	###########################################################
-	model = ModelBatch(embedding_size,hidden_size,direction,word_em,batch_size,context_max_length,question_max_length)
-	optimizer = optim.SGD(model.parameters(), lr=0.01)
+	model=None
+	if model_mode=="concat_attention":
+		model = ModelBatch(embedding_size,hidden_size,direction,word_em,batch_size,context_max_length,question_max_length)
+	elif model_mode=="softmax_attention":
+		model = SoftmaxAttentionModel(embedding_size,hidden_size,direction,word_em,batch_size,context_max_length,question_max_length)
+	else:
+		print("No model selected.")
+		return
+	optimizer = optim.SGD(model.parameters(), lr=0.1)
 
 	model_saved_name = ""
 	try:
@@ -55,7 +63,7 @@ def TrainModel(train_data,word_em,D,load_model=""):
 	cur_epoch = 0
 	trained_sample = 0
 
-	if load_model!="":
+	if load_model == "load":
 		print("Loading model...")
 		loaded_data = None
 		loaded_data = torch.load(model_saved_name)
@@ -188,6 +196,11 @@ def TrainModel(train_data,word_em,D,load_model=""):
 
 
 if __name__=="__main__":
+	if len(sys.argv)==1:
+		print("python GPU_RunModel_batch.py load softmax_attention")
+		print("python GPU_RunModel_batch.py not_load concat_attention")
+		exit()
+
 	D = 50
 
 	###########################################################
@@ -218,7 +231,6 @@ if __name__=="__main__":
 	###########################################################
 
 	load_model = sys.argv[1]
-	if load_model=="true":
-		TrainModel(train_data,word_em,D,"load_model")
-	else:
-		TrainModel(train_data,word_em,D,"")
+	model_mode = sys.argv[2]
+	TrainModel(train_data,word_em,D,load_model,model_mode)
+
