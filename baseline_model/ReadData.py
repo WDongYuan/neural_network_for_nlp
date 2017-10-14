@@ -24,40 +24,42 @@ class QA:
 		self.answer = " ".join(self.answer.split("\n"))
 		###########################################################
 
-		##Tokenization
-		self.context_token = word_tokenize(self.context)
-		self.context_token = [token.lower() for token in self.context_token]
-		self.question_token = word_tokenize(self.question)
-		self.question_token = [token.lower() for token in self.question_token]
-		self.answer_token = word_tokenize(self.answer)
-		self.answer_token = [token.lower() for token in self.answer_token]
+		###########################################################
+		# ##Tokenization
+		# self.context_token = word_tokenize(self.context)
+		# self.context_token = [token.lower() for token in self.context_token]
+		# self.question_token = word_tokenize(self.question)
+		# self.question_token = [token.lower() for token in self.question_token]
+		# self.answer_token = word_tokenize(self.answer)
+		# self.answer_token = [token.lower() for token in self.answer_token]
 
-		before_answer_length = len("".join(self.context[0:self.answer_start].split(" ")))
-		self.start_token = 0
-		while len("".join(self.context_token[0:self.start_token+1]))<before_answer_length:
-			self.start_token += 1
-		self.end_token = self.start_token
-		while "".join(self.answer_token) not in "".join(self.context_token[self.start_token:self.end_token+1]):
-			if self.end_token>len(self.context_token):
-				self.end_token=len(self.context_token)-1
-				print("False")
-				return
-			self.end_token += 1
-		while "".join(self.answer_token) in "".join(self.context_token[self.start_token+1:self.end_token+1]):
-			self.start_token += 1
-		# print(self.start_token)
-		# print(self.end_token)
+		# before_answer_length = len("".join(self.context[0:self.answer_start].split(" ")))
+		# self.start_token = 0
+		# while len("".join(self.context_token[0:self.start_token+1]))<before_answer_length:
+		# 	self.start_token += 1
+		# self.end_token = self.start_token
+		# while "".join(self.answer_token) not in "".join(self.context_token[self.start_token:self.end_token+1]):
+		# 	if self.end_token>len(self.context_token):
+		# 		self.end_token=len(self.context_token)-1
+		# 		print("False")
+		# 		return
+		# 	self.end_token += 1
+		# while "".join(self.answer_token) in "".join(self.context_token[self.start_token+1:self.end_token+1]):
+		# 	self.start_token += 1
+		# # print(self.start_token)
+		# # print(self.end_token)
 
 
-		if "".join(self.answer_token) not in "".join(self.context_token[self.start_token:self.end_token+1]):
-			print("".join(self.answer_token))
-			# print(self.context_token[self.start_token-1:self.start_token+2])
-			print("".join(self.context_token[self.start_token:self.end_token+1]))
-			print("#######################")
+		# if "".join(self.answer_token) not in "".join(self.context_token[self.start_token:self.end_token+1]):
+		# 	print("".join(self.answer_token))
+		# 	# print(self.context_token[self.start_token-1:self.start_token+2])
+		# 	print("".join(self.context_token[self.start_token:self.end_token+1]))
+		# 	print("#######################")
 
-		# self.context = self.context.encode("utf8")
-		# self.question = self.question.encode("utf8")
-		# self.answer = self.answer.encode("utf8")
+		# # self.context = self.context.encode("utf8")
+		# # self.question = self.question.encode("utf8")
+		# # self.answer = self.answer.encode("utf8")
+		###########################################################
 
 	def Show(self):
 		print("Context: "+self.context)
