@@ -110,8 +110,12 @@ def TrainModel(train_data,word_em,D,load_model=""):
 			my_start,context_length = model(batch_question,batch_context)
 
 			###########################################################
-			##Some performance statistics
-			batch_predict = my_start.data.numpy()
+			#GPU OPTION
+			###########################################################
+			# batch_predict = my_start.data.numpy()
+			###########################################################
+			batch_predict = my_start.data.cpu().numpy()
+			###########################################################
 			# print("Batch predict: "+str(batch_predict.shape))
 			for i in range(len(batch_predict)):
 				sample = batch_obj[i]
