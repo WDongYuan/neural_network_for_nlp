@@ -108,7 +108,7 @@ class QA:
 
 def ReadWrodEmbedding(path):
 	dic = {}
-	with open(path) as f:
+	with open(path,encoding='utf-8') as f:
 		for line in f:
 			word_em = line.strip().split(" ")
 			word = word_em[0]
