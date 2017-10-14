@@ -54,7 +54,9 @@ def TrainModel(train_data,word_em,D,load_model=""):
 		model.load_state_dict(loaded_data['state_dict'])
 		optimizer.load_state_dict(loaded_data['optimizer'])
 		trained_sample = loaded_data['trained_sample']
+		print(str(cur_epoch)+" epoches were train.")
 		print(str(trained_sample)+" samples were trained.")
+		cur_epoch += 1
 		# print("Loading done!")
 
 	# CE = nn.CrossEntropyLoss()
@@ -64,7 +66,11 @@ def TrainModel(train_data,word_em,D,load_model=""):
 	print("Begin training...")
 	for epoch in range(epoch_num):
 		print("Epoch "+str(epoch))
+
+		cur_epoch += epoch
 		sample_counter = trained_sample
+		trained_sample = 0
+
 		total_loss = 0
 		total_start_dist = 0
 		total_end_dist = 0
@@ -129,11 +135,11 @@ def TrainModel(train_data,word_em,D,load_model=""):
 				print("Time: "+str(time.time()-start_time))
 				start_time = time.time()
 
-				print("Epoch "+str(epoch)+": "+str(sample_counter)+" samples")
+				print("Epoch "+str(cur_epoch)+": "+str(sample_counter)+" samples")
 
 				if sample_counter%10000==0:
 					print("Saving model...")
-					save_model({'epoch': epoch,'state_dict': model.state_dict(),
+					save_model({'epoch': cur_epoch,'state_dict': model.state_dict(),
 						'optimizer':optimizer.state_dict(),'trained_sample':sample_counter},
 						model_saved_name)
 					print("Saving done!")
