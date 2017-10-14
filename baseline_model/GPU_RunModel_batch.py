@@ -156,7 +156,7 @@ if __name__=="__main__":
 	while qa_object.ReadFromFile(train_data_file):
 		train_data.append(qa_object)
 		qa_object = QA()
-	# print(len(train_data))
+	print(len(train_data))
 	# train_data[10000].Show()
 	train_data_file.close()
 	# print(train_data[10].answer)
