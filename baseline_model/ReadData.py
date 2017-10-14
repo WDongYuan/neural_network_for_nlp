@@ -108,7 +108,13 @@ class QA:
 
 def ReadWrodEmbedding(path):
 	dic = {}
-	with open(path,encoding='utf-8') as f:
+	###########################################################
+	#PYTHON VERSION
+	###########################################################
+	# with open(path,encoding='utf-8') as f:
+	###########################################################
+	with open(path) as f:
+	###########################################################
 		for line in f:
 			word_em = line.strip().split(" ")
 			word = word_em[0]
@@ -119,7 +125,13 @@ def ReadWrodEmbedding(path):
 
 def ReadTrainData(path="./data/train-v1.1.json"):
 	train_data_json = None
-	with open(path,encoding='utf-8') as f:
+	###########################################################
+	#PYTHON VERSION
+	###########################################################
+	# with open(path,encoding='utf-8') as f:
+	###########################################################
+	with open(path) as f:
+	###########################################################
 		train_data_json = json.load(f)
 	
 	# one_article = train_data_json["data"][0]

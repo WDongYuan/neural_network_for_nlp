@@ -10,7 +10,11 @@ import random
 import time
 import sys
 from GPU_ModelBatch import *
-import torch.backends.cudnn as cudnn
+###########################################################
+#GPU OPTION
+###########################################################
+# import torch.backends.cudnn as cudnn
+###########################################################
 
 def GetOrder(val,arr):
 	order = 1
@@ -71,14 +75,12 @@ def TrainModel(train_data,word_em,D,load_model=""):
 		sample_counter = trained_sample
 		trained_sample = 0
 
-		total_loss = 0
-		total_start_dist = 0
-		total_end_dist = 0
+		total_loss = 0.0
 
-		total_start_dist_percent = 0
-		total_end_dist_percent = 0
-		total_start_order = 0
-		total_end_order = 0
+		start_order = 0.0
+		end_order = 0.0
+		start_acc = 0.0
+
 		start_time = time.time()
 
 		for batch in range(int(len(train_data)/batch_size)):
@@ -86,20 +88,32 @@ def TrainModel(train_data,word_em,D,load_model=""):
 			batch_context = [sample.context_token for sample in train_data[batch*batch_size:(batch+1)*batch_size]]
 			batch_question = [sample.question_token for sample in train_data[batch*batch_size:(batch+1)*batch_size]]
 			
-			true_start = autograd.Variable(torch.LongTensor([sample.start_token for sample in train_data[batch*batch_size:(batch+1)*batch_size]]).cuda(async=True))
-			# true_end = autograd.Variable(torch.LongTensor([sample.end_token for sample in train_data[batch*batch_size:(batch+1)*batch_size]]))
+			###########################################################
+			#GPU OPTION
+			###########################################################
+			# true_start = autograd.Variable(torch.LongTensor([sample.start_token for sample in train_data[batch*batch_size:(batch+1)*batch_size]]).cuda(async=True))
+			###########################################################
+			true_start = autograd.Variable(torch.LongTensor([sample.start_token for sample in train_data[batch*batch_size:(batch+1)*batch_size]]))
+			###########################################################
 
 			optimizer.zero_grad()
-			# my_start,my_end = model(batch_question,batch_context)
-			my_start = model(batch_question,batch_context)
+			my_start,context_length = model(batch_question,batch_context)
 
 			###########################################################
 			##Some performance statistics
-			# predict_start_score = my_start.data[0].numpy()
-			# predict_start = np.argmax(predict_start_score)
-			# true_start_score = predict_start_score[sample.start_token]
-			# total_start_order += float(GetOrder(true_start_score,predict_start_score))/len(sample.context_token)
-			# total_start_dist_percent += float(np.abs(predict_start-sample.start_token))/len(sample.context_token)
+			batch_predict = my_start.data[0].numpy()
+			print("Batch predict: "+str(batch_predict.shape))
+			for i in range(len(batch_predict)):
+				predict_start_score = batch_predict[i][0:context_length[i]]
+				# predict_start = np.argmax(predict_start_score)
+				true_start_score = predict_start_score[sample.start_token]
+				true_order = GetOrder(true_start_score,predict_start_score)
+				if true_order==1:
+					start_acc += 1
+				start_order += float(true_order)/len(sample.context_token)
+			start_acc /= batch_size
+			start_order /= batch_size
+
 
 			# predict_end_score = my_end.data[0].numpy()
 			# predict_end = np.argmax(predict_end_score)
@@ -122,27 +136,23 @@ def TrainModel(train_data,word_em,D,load_model=""):
 				print("Loss: "+str(total_loss/print_every_batch))
 				total_loss = 0
 
-				# print("Average start point distance percent: "+str(float(total_start_dist_percent)/print_every_batch))
-				# total_start_dist_percent = 0
-				# print("Average end point distance percent: "+str(float(total_end_dist_percent)/print_every_batch))
-				# total_end_dist_percent = 0
+				print("Accuracy: "+str(start_acc))
+				start_acc = 0
 
-				# print("Average start point order: "+str(float(total_start_order)/print_every_batch))
-				# total_start_order = 0
-				# print("Average end point order: "+str(float(total_end_order)/print_every_batch))
-				# total_end_order = 0
+				print("Start point order: "+str(start_order))
+				start_order = 0
 
 				print("Time: "+str(time.time()-start_time))
 				start_time = time.time()
 
 				print("Epoch "+str(cur_epoch)+": "+str(sample_counter)+" samples")
 
-				if sample_counter%10000==0:
-					print("Saving model...")
-					save_model({'epoch': cur_epoch,'state_dict': model.state_dict(),
-						'optimizer':optimizer.state_dict(),'trained_sample':sample_counter},
-						model_saved_name)
-					print("Saving done!")
+			if sample_counter%10000==0:
+				print("Saving model...")
+				save_model({'epoch': cur_epoch,'state_dict': model.state_dict(),
+					'optimizer':optimizer.state_dict(),'trained_sample':sample_counter},
+					model_saved_name)
+				print("Saving done!")
 
 				print("###########################################################")
 	print("Done!")
@@ -157,7 +167,13 @@ if __name__=="__main__":
 	##Read train data from saved file
 	print("Reading data...")
 	train_data = []
-	train_data_file = open("./data/train_data.out",encoding='utf-8')
+	###########################################################
+	#PYTHON VERSION
+	###########################################################
+	# train_data_file = open("./data/train_data.out",encoding='utf-8')
+	###########################################################
+	train_data_file = open("./data/train_data.out")
+	###########################################################
 	qa_object = QA()
 	while qa_object.ReadFromFile(train_data_file):
 		train_data.append(qa_object)
