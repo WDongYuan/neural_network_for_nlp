@@ -26,10 +26,10 @@ def GetOrder(val,arr):
 def save_model(state, filename='saved_model.out'):
     torch.save(state, filename)
 
-def TrainModel(train_data,word_em,D,load_model,model_mode):
+def TrainModel(train_data,word_em,D,load_model,model_mode,learning_rate,hidden_size):
 
 	global UNKNOWNWORD
-	hidden_size = 200
+	# hidden_size = 200
 	embedding_size = D
 	epoch_num = 100
 	direction = 2
@@ -51,7 +51,7 @@ def TrainModel(train_data,word_em,D,load_model,model_mode):
 	else:
 		print("No model selected.")
 		return
-	optimizer = optim.SGD(model.parameters(), lr=0.1)
+	optimizer = optim.SGD(model.parameters(), lr=learning_rate)
 
 	model_saved_name = ""
 	try:
@@ -197,8 +197,8 @@ def TrainModel(train_data,word_em,D,load_model,model_mode):
 
 if __name__=="__main__":
 	if len(sys.argv)==1:
-		print("python GPU_RunModel_batch.py load softmax_attention")
-		print("python GPU_RunModel_batch.py not_load concat_attention")
+		print("python GPU_RunModel_batch.py load softmax_attention 0.1(learning_rate) 200(hidden_size)")
+		print("python GPU_RunModel_batch.py not_load concat_attention 0.1(learning_rate) 200(hidden_size)")
 		exit()
 
 	D = 50
@@ -232,5 +232,7 @@ if __name__=="__main__":
 
 	load_model = sys.argv[1]
 	model_mode = sys.argv[2]
-	TrainModel(train_data,word_em,D,load_model,model_mode)
+	learning_rate = float(sys.argv[3])
+	hidden_size = int(sys.argv[4])
+	TrainModel(train_data,word_em,D,load_model,model_mode,learning_rate,hidden_size)
 
