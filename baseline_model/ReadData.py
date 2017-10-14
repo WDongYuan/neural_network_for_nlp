@@ -1,6 +1,6 @@
 import numpy as np
 import json
-# from nltk.tokenize import word_tokenize
+# from nltk.tokenizie import word_tokenize
 # import matplotlib.pyplot as plt
 UNKNOWNWORD = "unknownword"
 class QA:
@@ -111,9 +111,9 @@ def ReadWrodEmbedding(path):
 	###########################################################
 	#PYTHON VERSION
 	###########################################################
-	# with open(path,encoding='utf-8') as f:
+	with open(path,encoding='utf-8') as f:
 	###########################################################
-	with open(path) as f:
+	# with open(path) as f:
 	###########################################################
 		for line in f:
 			word_em = line.strip().split(" ")
@@ -128,9 +128,9 @@ def ReadTrainData(path="./data/train-v1.1.json"):
 	###########################################################
 	#PYTHON VERSION
 	###########################################################
-	# with open(path,encoding='utf-8') as f:
+	with open(path,encoding='utf-8') as f:
 	###########################################################
-	with open(path) as f:
+	# with open(path) as f:
 	###########################################################
 		train_data_json = json.load(f)
 	

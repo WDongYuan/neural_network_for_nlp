@@ -11,7 +11,7 @@ import torch.optim as optim
 ###########################################################
 #GPU OPTION
 ###########################################################
-# import torch.backends.cudnn as cudnn
+import torch.backends.cudnn as cudnn
 ###########################################################
 UNKNOWNWORD = "unknownword"
 
@@ -54,9 +54,9 @@ class ModelBatch(nn.Module):
 		###########################################################
 		#GPU OPTION
 		###########################################################
-		# return autograd.Variable(torch.rand(self.direction,self.batch_size,self.hidden_size).cuda(async=True))
+		return autograd.Variable(torch.rand(self.direction,self.batch_size,self.hidden_size).cuda(async=True))
 		###########################################################
-		return autograd.Variable(torch.rand(self.direction,self.batch_size,self.hidden_size))
+		# return autograd.Variable(torch.rand(self.direction,self.batch_size,self.hidden_size))
 		###########################################################
 
 	def forward(self,question,passage):
@@ -87,11 +87,11 @@ class ModelBatch(nn.Module):
 		###########################################################
 		#GPU OPTION
 		###########################################################
-		# question_last_hidden = torch.index_select(tmp_q,0,Variable(torch.LongTensor(question_length).cuda(async=True)))
-		# passage_last_hidden = torch.index_select(tmp_p,0,Variable(torch.LongTensor(passage_length).cuda(async=True)))
+		question_last_hidden = torch.index_select(tmp_q,0,Variable(torch.LongTensor(question_length).cuda(async=True)))
+		passage_last_hidden = torch.index_select(tmp_p,0,Variable(torch.LongTensor(passage_length).cuda(async=True)))
 		###########################################################
-		question_last_hidden = torch.index_select(tmp_q,0,Variable(torch.LongTensor(all_question_length)))
-		passage_last_hidden = torch.index_select(tmp_p,0,Variable(torch.LongTensor(all_passage_length)))
+		# question_last_hidden = torch.index_select(tmp_q,0,Variable(torch.LongTensor(all_question_length)))
+		# passage_last_hidden = torch.index_select(tmp_p,0,Variable(torch.LongTensor(all_passage_length)))
 		###########################################################
 
 		##Concatanate 2 direction
@@ -128,9 +128,9 @@ class ModelBatch(nn.Module):
 		###########################################################
 		#GPU OPTION
 		###########################################################
-		# batch_embedding = Variable(torch.from_numpy(batch_embedding).float().cuda(async=True))
+		batch_embedding = Variable(torch.from_numpy(batch_embedding).float().cuda(async=True))
 		###########################################################
-		batch_embedding = Variable(torch.from_numpy(batch_embedding).float())
+		# batch_embedding = Variable(torch.from_numpy(batch_embedding).float())
 		###########################################################
 		return batch_embedding,sent_length
 

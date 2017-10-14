@@ -13,7 +13,7 @@ from GPU_ModelBatch import *
 ###########################################################
 #GPU OPTION
 ###########################################################
-# import torch.backends.cudnn as cudnn
+import torch.backends.cudnn as cudnn
 ###########################################################
 
 def GetOrder(val,arr):
@@ -36,7 +36,12 @@ def TrainModel(train_data,word_em,D,load_model=""):
 	context_max_length = max([len(sample.context_token) for sample in train_data])
 	question_max_length = max([len(sample.question_token) for sample in train_data])
 
+
+	###########################################################
+	#GPU OPTION
+	###########################################################
 	cudnn.benchmark = True
+	###########################################################
 	model = ModelBatch(embedding_size,hidden_size,direction,word_em,batch_size,context_max_length,question_max_length)
 	optimizer = optim.SGD(model.parameters(), lr=0.1)
 
@@ -65,7 +70,11 @@ def TrainModel(train_data,word_em,D,load_model=""):
 
 	# CE = nn.CrossEntropyLoss()
 	NLL = nn.NLLLoss()
+	###########################################################
+	#GPU OPTION
+	###########################################################
 	model.cuda()
+	###########################################################
 
 	print("Begin training...")
 	for epoch in range(epoch_num):
@@ -85,15 +94,16 @@ def TrainModel(train_data,word_em,D,load_model=""):
 
 		for batch in range(int(len(train_data)/batch_size)):
 			sample_counter += batch_size
+			batch_obj = [sample for sample in train_data[batch*batch_size:(batch+1)*batch_size]]
 			batch_context = [sample.context_token for sample in train_data[batch*batch_size:(batch+1)*batch_size]]
 			batch_question = [sample.question_token for sample in train_data[batch*batch_size:(batch+1)*batch_size]]
 			
 			###########################################################
 			#GPU OPTION
 			###########################################################
-			# true_start = autograd.Variable(torch.LongTensor([sample.start_token for sample in train_data[batch*batch_size:(batch+1)*batch_size]]).cuda(async=True))
+			true_start = autograd.Variable(torch.LongTensor([sample.start_token for sample in train_data[batch*batch_size:(batch+1)*batch_size]]).cuda(async=True))
 			###########################################################
-			true_start = autograd.Variable(torch.LongTensor([sample.start_token for sample in train_data[batch*batch_size:(batch+1)*batch_size]]))
+			# true_start = autograd.Variable(torch.LongTensor([sample.start_token for sample in train_data[batch*batch_size:(batch+1)*batch_size]]))
 			###########################################################
 
 			optimizer.zero_grad()
@@ -101,9 +111,10 @@ def TrainModel(train_data,word_em,D,load_model=""):
 
 			###########################################################
 			##Some performance statistics
-			batch_predict = my_start.data[0].numpy()
-			print("Batch predict: "+str(batch_predict.shape))
+			batch_predict = my_start.data.numpy()
+			# print("Batch predict: "+str(batch_predict.shape))
 			for i in range(len(batch_predict)):
+				sample = batch_obj[i]
 				predict_start_score = batch_predict[i][0:context_length[i]]
 				# predict_start = np.argmax(predict_start_score)
 				true_start_score = predict_start_score[sample.start_token]
@@ -134,18 +145,19 @@ def TrainModel(train_data,word_em,D,load_model=""):
 			print_every_batch = 1
 			if sample_counter%print_every_batch==0:
 				print("Loss: "+str(total_loss/print_every_batch))
-				total_loss = 0
+				total_loss = 0.0
 
 				print("Accuracy: "+str(start_acc))
-				start_acc = 0
+				start_acc = 0.0
 
 				print("Start point order: "+str(start_order))
-				start_order = 0
+				start_order = 0.0
 
 				print("Time: "+str(time.time()-start_time))
 				start_time = time.time()
 
 				print("Epoch "+str(cur_epoch)+": "+str(sample_counter)+" samples")
+				print("###########################################################")
 
 			if sample_counter%10000==0:
 				print("Saving model...")
@@ -153,7 +165,6 @@ def TrainModel(train_data,word_em,D,load_model=""):
 					'optimizer':optimizer.state_dict(),'trained_sample':sample_counter},
 					model_saved_name)
 				print("Saving done!")
-
 				print("###########################################################")
 	print("Done!")
 
@@ -170,15 +181,15 @@ if __name__=="__main__":
 	###########################################################
 	#PYTHON VERSION
 	###########################################################
-	# train_data_file = open("./data/train_data.out",encoding='utf-8')
+	train_data_file = open("./data/train_data.out",encoding='utf-8')
 	###########################################################
-	train_data_file = open("./data/train_data.out")
+	# train_data_file = open("./data/train_data.out")
 	###########################################################
 	qa_object = QA()
 	while qa_object.ReadFromFile(train_data_file):
 		train_data.append(qa_object)
 		qa_object = QA()
-	print(len(train_data))
+	print("Total sample: "+str(len(train_data)))
 	# train_data[10000].Show()
 	train_data_file.close()
 	# print(train_data[10].answer)
