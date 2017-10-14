@@ -1,6 +1,6 @@
 import numpy as np
 import json
-from nltk.tokenize import word_tokenize
+# from nltk.tokenize import word_tokenize
 # import matplotlib.pyplot as plt
 UNKNOWNWORD = "unknownword"
 class QA:
@@ -99,7 +99,8 @@ class QA:
 			self.end_token = int(file_token.readline().strip())
 			extract_answer = file_token.readline().strip()
 			file_token.readline()
-		except Exception,e:
+		# except Exception,e:
+		except:
 			# print(str(e))
 			return False
 		return True
