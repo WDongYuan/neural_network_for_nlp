@@ -18,7 +18,7 @@ UNKNOWNWORD = "unknownword"
 class ModelBatch(nn.Module):
 	def __init__(self,embedding_size,hidden_size,direction,word_em,batch_size,context_max_length,question_max_length):
 		super(ModelBatch, self).__init__()
-		self.model_name = "concat_attention"
+		self.name = "concat_attention"
 
 		self.word_em = word_em
 		self.batch_size = batch_size

@@ -18,7 +18,7 @@ UNKNOWNWORD = "unknownword"
 class SoftmaxAttentionModel(nn.Module):
 	def __init__(self,embedding_size,hidden_size,direction,word_em,batch_size,context_max_length,question_max_length):
 		super(SoftmaxAttentionModel, self).__init__()
-		self.model_name = "softmax_attention"
+		self.name = "softmax_attention"
 
 		self.word_em = word_em
 		self.batch_size = batch_size
