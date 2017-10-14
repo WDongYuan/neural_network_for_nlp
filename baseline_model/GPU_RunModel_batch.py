@@ -63,6 +63,7 @@ def TrainModel(train_data,word_em,D,load_model=""):
 
 	print("Begin training...")
 	for epoch in range(epoch_num):
+		print("Epoch "+str(epoch))
 		sample_counter = trained_sample
 		total_loss = 0
 		total_start_dist = 0
@@ -138,6 +139,7 @@ def TrainModel(train_data,word_em,D,load_model=""):
 					print("Saving done!")
 
 				print("###########################################################")
+	print("Done!")
 
 
 
