@@ -119,7 +119,7 @@ def ReadWrodEmbedding(path):
 
 def ReadTrainData(path="./data/train-v1.1.json"):
 	train_data_json = None
-	with open(path) as f:
+	with open(path,encoding='utf-8') as f:
 		train_data_json = json.load(f)
 	
 	# one_article = train_data_json["data"][0]
