@@ -26,7 +26,7 @@ def TrainModel(train_data,word_em,D,load_model=""):
 	global UNKNOWNWORD
 	hidden_size = 200
 	embedding_size = D
-	epoch_num = 1
+	epoch_num = 100
 	direction = 2
 	batch_size = 100
 	context_max_length = max([len(sample.context_token) for sample in train_data])
