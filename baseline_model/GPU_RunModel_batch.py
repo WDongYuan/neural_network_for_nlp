@@ -89,6 +89,8 @@ def TrainModel(train_data,word_em,D,load_model=""):
 		start_order = 0.0
 		end_order = 0.0
 		start_acc = 0.0
+		start_pro = 0.0
+		max_pro = 0.0
 
 		start_time = time.time()
 
@@ -122,12 +124,16 @@ def TrainModel(train_data,word_em,D,load_model=""):
 				predict_start_score = batch_predict[i][0:context_length[i]]
 				# predict_start = np.argmax(predict_start_score)
 				true_start_score = predict_start_score[sample.start_token]
+				start_pro += true_start_score
+				max_pro += np.max(predict_start_score)
 				true_order = GetOrder(true_start_score,predict_start_score)
 				if true_order==1:
 					start_acc += 1
 				start_order += float(true_order)/len(sample.context_token)
 			start_acc /= batch_size
 			start_order /= batch_size
+			start_pro /= batch_size
+			max_pro /= start_pro
 
 
 			# predict_end_score = my_end.data[0].numpy()
@@ -156,6 +162,12 @@ def TrainModel(train_data,word_em,D,load_model=""):
 
 				print("Start point order: "+str(start_order))
 				start_order = 0.0
+
+				print("Start point probability: "+str(start_pro))
+				start_pro = 0.0
+
+				print("Max probability: "+str(max_pro))
+				max_pro = 0.0
 
 				print("Time: "+str(time.time()-start_time))
 				start_time = time.time()
