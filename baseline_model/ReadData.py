@@ -1,6 +1,6 @@
 import numpy as np
 import json
-from nltk.tokenize import word_tokenize
+# from nltk.tokenize import word_tokenize
 # import matplotlib.pyplot as plt
 UNKNOWNWORD = "unknownword"
 class QA:
