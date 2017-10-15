@@ -60,6 +60,8 @@ class ModelBatch(nn.Module):
 		###########################################################
 
 	def forward(self,question,passage):
+		self.batch_size = len(passage)
+		
 		self.q_hidden = self.init_hidden()
 		# print(self.q_hidden)
 		self.q_c_n = self.init_hidden()

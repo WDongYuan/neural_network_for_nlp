@@ -1,6 +1,6 @@
 import numpy as np
 import json
-# from nltk.tokenizie import word_tokenize
+from nltk.tokenize import word_tokenize
 # import matplotlib.pyplot as plt
 UNKNOWNWORD = "unknownword"
 class QA:
@@ -25,7 +25,7 @@ class QA:
 		###########################################################
 
 		###########################################################
-		# ##Tokenization
+		##Tokenization begin
 		# self.context_token = word_tokenize(self.context)
 		# self.context_token = [token.lower() for token in self.context_token]
 		# self.question_token = word_tokenize(self.question)
@@ -55,10 +55,14 @@ class QA:
 		# 	# print(self.context_token[self.start_token-1:self.start_token+2])
 		# 	print("".join(self.context_token[self.start_token:self.end_token+1]))
 		# 	print("#######################")
+		##Tokenization End
+		###########################################################
 
-		# # self.context = self.context.encode("utf8")
-		# # self.question = self.question.encode("utf8")
-		# # self.answer = self.answer.encode("utf8")
+
+
+		# self.context = self.context.encode("utf8")
+		# self.question = self.question.encode("utf8")
+		# self.answer = self.answer.encode("utf8")
 		###########################################################
 
 	def Show(self):
@@ -192,16 +196,16 @@ if __name__=="__main__":
 	# CreateUnknownWord(train_data,word_em,D,"./data/processed_word_embedding")
 	###########################################################
 	##Read train data from json file and then save it.
-	tmp_counter = 0
-	train_data = ReadTrainData("./data/train-v1.1.json")
-	save_train_data_file = open("./data/train_data.out","w+")
-	for qa in train_data:
-		tmp_counter += 1
-		qa.SaveToFile(save_train_data_file)
-		if tmp_counter%10000==0:
-			print(tmp_counter)
-	save_train_data_file.close()
-	print("Finish reading...")
+	# tmp_counter = 0
+	# train_data = ReadTrainData("./data/dev-v1.1.json")
+	# save_train_data_file = open("./data/dev_data.out","w+")
+	# for qa in train_data:
+	# 	tmp_counter += 1
+	# 	qa.SaveToFile(save_train_data_file)
+	# 	if tmp_counter%10000==0:
+	# 		print(tmp_counter)
+	# save_train_data_file.close()
+	# print("Finish reading...")
 	###########################################################
 
 	###########################################################
