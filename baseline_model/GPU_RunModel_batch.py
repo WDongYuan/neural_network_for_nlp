@@ -302,7 +302,7 @@ def Predict(train_data,test_data,word_em,D,learning_rate,hidden_size,model_path,
 				predict_file.write(", ")
 			else:
 				is_first = False
-			predict_file.write("\""+batch_data[i].question_id+"\": \""+" ".join(batch_data[i].context_token[predict_idx:predict_idx+2])+"\"")
+			predict_file.write(("\""+batch_data[i].question_id+"\": \""+" ".join(batch_data[i].context_token[predict_idx:predict_idx+2])+"\"").encode("utf-8"))
 	predict_file.write("}")
 	predict_file.close()
 		
