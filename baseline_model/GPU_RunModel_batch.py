@@ -9,8 +9,9 @@ import numpy as np
 import random
 import time
 import sys
-from GPU_ModelBatch import *
+# from GPU_ModelBatch import *
 from SoftmaxAttention import *
+from TwoPointerModel import *
 ###########################################################
 #GPU OPTION
 ###########################################################
@@ -33,9 +34,9 @@ def Accuracy(model,data):
 	###########################################################
 	#GPU OPTION
 	###########################################################
-	# batch_predict = my_start.data.numpy()
-	###########################################################
 	batch_predict = my_start.data.cpu().numpy()
+	###########################################################
+	# batch_predict = my_start.data.numpy()
 	###########################################################
 	for i in range(len(batch_predict)):
 		sample = data[i]
@@ -56,6 +57,67 @@ def Accuracy(model,data):
 	print("Start point order: "+str(start_order))
 	print("Start point probability: "+str(start_pro))
 	print("Max probability: "+str(max_pro))
+
+def TwoPointerAccuracy(model,data):
+	random.shuffle(data)
+	data = data[0:1000]
+	batch_size = len(data)
+
+	batch_context = [sample.context_token for sample in data]
+	batch_question = [sample.question_token for sample in data]
+	my_start,my_end,context_length = model(batch_question,batch_context)
+
+	start_order = 0.0
+	start_acc = 0.0
+	start_pro = 0.0
+	start_max_pro = 0.0
+
+	end_order = 0.0
+	end_acc = 0.0
+	end_pro = 0.0
+	end_max_pro = 0.0
+
+	###########################################################
+	#GPU OPTION
+	###########################################################
+	start_batch_predict = my_start.data.cpu().numpy()
+	end_batch_predict = my_end.data.cpu().numpy()
+	###########################################################
+	# start_batch_predict = my_start.data.numpy()
+	# end_batch_predict = my_end.data.numpy()
+	###########################################################
+	for i in range(len(start_batch_predict)):
+		sample = data[i]
+		predict_start_score = start_batch_predict[i][0:context_length[i]]
+		true_start_score = predict_start_score[sample.start_token]
+		start_pro += true_start_score
+		start_max_pro += np.max(predict_start_score)
+
+		##Find the end point
+		predict_start_idx = np.argmax(predict_start_score)
+		predict_end_idx = predict_start_idx+np.argmax(end_batch_predict[i])
+		if predict_end_idx==sample.end_token:
+			end_acc += 1
+		if sample.end_token<predict_start_idx+len(end_batch_predict[i]) and sample.end_token>=predict_start_idx:
+			end_pro += end_batch_predict[i][sample.end_token-predict_start_idx]
+
+		true_order = GetOrder(true_start_score,predict_start_score)
+		if true_order==1:
+			start_acc += 1
+		start_order += float(true_order)/len(sample.context_token)
+	start_acc /= batch_size
+	start_order /= batch_size
+	start_pro /= batch_size
+	start_max_pro /= batch_size
+	end_acc /= batch_size
+	end_pro /= batch_size
+
+	print("Start accuracy: "+str(start_acc))
+	print("Start point order: "+str(start_order))
+	print("Start point probability: "+str(start_pro))
+	print("Start max probability: "+str(start_max_pro))
+	print("End accuracy: "+str(end_acc))
+	print("End point probability: "+str(end_pro))
 
 
 
@@ -80,6 +142,7 @@ def TrainModel(train_data,dev_data,word_em,D,load_model,model_mode,learning_rate
 	batch_size = 100
 	context_max_length = max([len(sample.context_token) for sample in train_data])
 	question_max_length = max([len(sample.question_token) for sample in train_data])
+	max_answer_length = 10
 	# print(context_max_length)
 	# print(question_max_length)
 	# print(max([len(sample.context_token) for sample in dev_data]))
@@ -92,11 +155,13 @@ def TrainModel(train_data,dev_data,word_em,D,load_model,model_mode,learning_rate
 	cudnn.benchmark = True
 	###########################################################
 	model=None
-	if model_mode=="concat_attention":
-		model = ModelBatch(embedding_size,hidden_size,direction,word_em,batch_size,context_max_length,question_max_length)
-	elif model_mode=="softmax_attention":
+	# if model_mode=="concat_attention":
+	# 	model = ModelBatch(embedding_size,hidden_size,direction,word_em,batch_size,context_max_length,question_max_length)
+	if model_mode=="softmax_attention":
 		model = SoftmaxAttentionModel(embedding_size,hidden_size,direction,word_em,batch_size,context_max_length,question_max_length)
-	else:
+	if model_mode=="two_pointer":
+		model = TwoPointerModel(embedding_size,hidden_size,direction,word_em,batch_size,context_max_length,question_max_length,max_answer_length)
+	if model==None:
 		print("No model selected.")
 		return
 	optimizer = optim.SGD(model.parameters(), lr=learning_rate)
@@ -154,17 +219,27 @@ def TrainModel(train_data,dev_data,word_em,D,load_model,model_mode,learning_rate
 			batch_obj = [sample for sample in train_data[batch*batch_size:(batch+1)*batch_size]]
 			batch_context = [sample.context_token for sample in train_data[batch*batch_size:(batch+1)*batch_size]]
 			batch_question = [sample.question_token for sample in train_data[batch*batch_size:(batch+1)*batch_size]]
+			batch_start = [sample.start_token for sample in train_data[batch*batch_size:(batch+1)*batch_size]]
 			
 			###########################################################
 			#GPU OPTION
 			###########################################################
 			true_start = autograd.Variable(torch.LongTensor([sample.start_token for sample in train_data[batch*batch_size:(batch+1)*batch_size]]).cuda(async=True))
+			true_end = autograd.Variable(torch.LongTensor([sample.end_token-sample.start_token if sample.end_token-sample.start_token<max_answer_length else 0
+				for sample in train_data[batch*batch_size:(batch+1)*batch_size]]).cuda(async=True))
 			###########################################################
 			# true_start = autograd.Variable(torch.LongTensor([sample.start_token for sample in train_data[batch*batch_size:(batch+1)*batch_size]]))
+			# true_end = autograd.Variable(torch.LongTensor([sample.end_token-sample.start_token if sample.end_token-sample.start_token<max_answer_length else 0
+			# 	for sample in train_data[batch*batch_size:(batch+1)*batch_size]]))
 			###########################################################
 
 			optimizer.zero_grad()
-			my_start,context_length = model(batch_question,batch_context)
+			###########################################################
+			# my_start,context_length = model(batch_question,batch_context,batch_start)
+			###########################################################
+			my_start,my_end,context_length = model(batch_question,batch_context,batch_start)
+			###########################################################
+
 
 			###########################################################
 			#GPU OPTION
@@ -199,8 +274,8 @@ def TrainModel(train_data,dev_data,word_em,D,load_model,model_mode,learning_rate
 			###########################################################
 
 			# loss = CE(my_output,true_output)
-			# loss = NLL(my_start,true_start)+NLL(my_end,true_end)
-			loss = NLL(my_start,true_start)
+			loss = NLL(my_start,true_start)+NLL(my_end,true_end)
+			# loss = NLL(my_start,true_start)
 			# total_loss += loss.data[0]
 
 			loss.backward()
@@ -210,6 +285,7 @@ def TrainModel(train_data,dev_data,word_em,D,load_model,model_mode,learning_rate
 			print_every_batch = 1
 			if sample_counter%print_every_batch==0:
 				print("Epoch "+str(cur_epoch)+": "+str(sample_counter)+" samples")
+				print(loss.data[0])
 				# print("Loss: "+str(total_loss/print_every_batch))
 				# total_loss = 0.0
 				# print("Accuracy: "+str(start_acc))
@@ -223,9 +299,13 @@ def TrainModel(train_data,dev_data,word_em,D,load_model,model_mode,learning_rate
 				print("Time: "+str(time.time()-start_time))
 				start_time = time.time()
 				print("###########################################################")
-			if sample_counter%1000==0:
+			if sample_counter%100==0:
 				print("Dev set performance")
-				Accuracy(model,dev_data)
+				###########################################################
+				# Accuracy(model,dev_data)
+				###########################################################
+				TwoPointerAccuracy(model,dev_data)
+				###########################################################
 				print("###########################################################")
 			if sample_counter%10000==0:
 				print("Saving model...")
