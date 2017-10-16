@@ -283,7 +283,7 @@ def TrainModel(train_data,dev_data,word_em,D,load_model,model_mode,learning_rate
 
 
 			print_every_batch = 10
-			if batch%print_every_batch==0:
+			if (batch+1)%print_every_batch==0:
 				print("Epoch "+str(cur_epoch)+": "+str(sample_counter)+" samples")
 				# print(loss.data[0])
 				# print("Loss: "+str(total_loss/print_every_batch))
