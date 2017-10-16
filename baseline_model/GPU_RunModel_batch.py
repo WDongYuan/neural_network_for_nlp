@@ -335,6 +335,7 @@ if __name__=="__main__":
 		exit()
 
 	D = 200
+	CUT_CONTEXT = 650
 
 	###########################################################
 	##Read train data from saved file
@@ -368,6 +369,11 @@ if __name__=="__main__":
 
 	word_em = ReadWrodEmbedding("./data/processed_word_embedding")
 	###########################################################
+	##Cut context
+	for tmp_qa in train_data:
+		tmp_qa.context_token = tmp_qa.context_token[0:CUT_CONTEXT]
+	for tmp_qa in dev_data:
+		tmp_qa.context_token = tmp_qa.context_token[0:CUT_CONTEXT]
 
 	if sys.argv[1]=="predict":
 		model_path = sys.argv[2]
