@@ -271,7 +271,13 @@ def Predict(train_data,test_data,word_em,D,learning_rate,hidden_size,model_path,
 	test_context = [sample.context_token for sample in data]
 	test_question = [sample.question_token for sample in data]
 
-	predict_file = open(save_path,"w+")
+	###########################################################
+	#PYTHON VERSION
+	###########################################################
+	predict_file = open(save_path,"w+",encoding='utf-8')
+	###########################################################
+	# predict_file = open(save_path,"w+")
+	###########################################################
 	predict_file.write("{")
 	is_first = True
 	for batch_i in range(int(len(data)/batch_size)+1):
@@ -302,7 +308,7 @@ def Predict(train_data,test_data,word_em,D,learning_rate,hidden_size,model_path,
 				predict_file.write(", ")
 			else:
 				is_first = False
-			predict_file.write("\""+(batch_data[i].question_id).encode("utf-8")+"\": \""+" ".join(batch_data[i].context_token[predict_idx:predict_idx+2])+"\"")
+			predict_file.write("\""+batch_data[i].question_id+"\": \""+" ".join(batch_data[i].context_token[predict_idx:predict_idx+2])+"\"")
 	predict_file.write("}")
 	predict_file.close()
 		
