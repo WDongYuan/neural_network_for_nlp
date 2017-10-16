@@ -83,7 +83,13 @@ class TwoPointerModel(nn.Module):
 		start_pro = self.softmax(start_align_score.view(self.batch_size,-1))
 
 		if start_point==None:
-			start_point = np.argmax(start_pro.data.numpy(),1)
+			###########################################################
+			# GPU OPTION
+			###########################################################
+			start_point = np.argmax(start_pro.data.cpu().numpy(),1)
+			###########################################################
+			# start_point = np.argmax(start_pro.data.numpy(),1)
+			###########################################################
 		#Select out the answer range
 		answer_range_list = [[j%self.passage_max_length for j in range(start_point[i],start_point[i]+self.max_answer_length)]for i in range(len(start_point))]
 		answer_range_list = [i*self.passage_max_length+answer_range_list[i][j] for i in range(len(answer_range_list)) for j in range(len(answer_range_list[i]))]
