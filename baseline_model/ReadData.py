@@ -194,7 +194,8 @@ def CreateUnknownWord(qa_list,word_em,D,save_path="./data/processed_word_embeddi
 
 
 if __name__=="__main__":
-	D = 50
+	D = 200
+	# print("Reading word embedding...")
 	# word_em = ReadWrodEmbedding("./data/glove.6B/glove.6B."+str(D)+"d.txt")
 	# CreateUnknownWord(train_data,word_em,D,"./data/processed_word_embedding")
 	###########################################################
@@ -224,6 +225,7 @@ if __name__=="__main__":
 
 	###########################################################
 	#Read train data from saved file
+	# print("Reading train data...")
 	# train_data = []
 	# train_data_file = open("./data/train_data.out")
 	# qa_object = QA()
@@ -239,6 +241,7 @@ if __name__=="__main__":
 	# print(len(train_data))
 	# print(len(word_em))
 	###########################################################
+	# CreateUnknownWord(train_data,word_em,D,"./data/processed_word_embedding")
 
 
 

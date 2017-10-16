@@ -251,7 +251,8 @@ def Predict(train_data,test_data,word_em,D,learning_rate,hidden_size,model_path,
 	###########################################################
 	
 	model = SoftmaxAttentionModel(embedding_size,hidden_size,direction,word_em,batch_size,context_max_length,question_max_length)
-	optimizer = optim.SGD(model.parameters(), lr=learning_rate)
+	# optimizer = optim.SGD(model.parameters(), lr=learning_rate)
+	optimizer = optim.Adadelta(model.parameters(), lr=learning_rate)
 
 	print("Loading model...")
 	loaded_data = None
@@ -326,7 +327,7 @@ if __name__=="__main__":
 		print("python GPU_RunModel_batch.py predict softmax_attention_50_200_2_0.1_start.save dev_predict")
 		exit()
 
-	D = 50
+	D = 200
 
 	###########################################################
 	##Read train data from saved file
