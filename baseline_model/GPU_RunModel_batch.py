@@ -274,7 +274,7 @@ def Predict(train_data,test_data,word_em,D,learning_rate,hidden_size,model_path,
 	predict_file = open(save_path,"w+")
 	predict_file.write("{")
 	is_first = True
-	for batch_i in range(len(data)/batch_size+1):
+	for batch_i in range(int(len(data)/batch_size)+1):
 		begin = batch_i*batch_size
 		end = (batch_i+1)*batch_size
 		if begin>=len(data):
