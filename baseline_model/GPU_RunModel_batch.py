@@ -235,7 +235,7 @@ def TrainModel(train_data,dev_data,word_em,D,load_model,model_mode,learning_rate
 
 			optimizer.zero_grad()
 			###########################################################
-			my_start,context_length = model(batch_question,batch_context,batch_start)
+			my_start,context_length = model(batch_question,batch_context)
 			###########################################################
 			# my_start,my_end,context_length = model(batch_question,batch_context,batch_start)
 			###########################################################
