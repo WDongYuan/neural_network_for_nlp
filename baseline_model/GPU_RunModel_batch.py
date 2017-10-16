@@ -17,31 +17,37 @@ from SoftmaxAttention import *
 ###########################################################
 import torch.backends.cudnn as cudnn
 ###########################################################
-def Accuracy(model,data):
+def Accuracy(model,data,pointer_type):
 	random.shuffle(data)
 	data = data[0:200]
 	batch_size = len(data)
 
 	batch_context = [sample.context_token for sample in data]
 	batch_question = [sample.question_token for sample in data]
-	my_start,context_length = model(batch_question,batch_context)
+	my_predict,context_length = model(batch_question,batch_context)
 
-	start_order = 0.0
-	start_acc = 0.0
-	start_pro = 0.0
+	order = 0.0
+	acc = 0.0
+	pro = 0.0
 	max_pro = 0.0
 
 	###########################################################
 	#GPU OPTION
 	###########################################################
-	batch_predict = my_start.data.cpu().numpy()
+	batch_predict = my_predict.data.cpu().numpy()
 	###########################################################
-	# batch_predict = my_start.data.numpy()
+	# batch_predict = my_predict.data.numpy()
 	###########################################################
 	for i in range(len(batch_predict)):
 		sample = data[i]
 		predict_start_score = batch_predict[i][0:context_length[i]]
-		true_start_score = predict_start_score[sample.start_token]
+
+		true_start_score = None
+		if pointer_type=="begin":
+			true_start_score = predict_start_score[sample.start_token]
+		elif pointer_type=="end":
+			true_start_score = predict_start_score[sample.end_token]
+
 		start_pro += true_start_score
 		max_pro += np.max(predict_start_score)
 		true_order = GetOrder(true_start_score,predict_start_score)
@@ -54,8 +60,8 @@ def Accuracy(model,data):
 	max_pro /= batch_size
 
 	print("Accuracy: "+str(start_acc))
-	print("Start point order: "+str(start_order))
-	print("Start point probability: "+str(start_pro))
+	print("Point order: "+str(start_order))
+	print("Point probability: "+str(start_pro))
 	print("Max probability: "+str(max_pro))
 
 def TwoPointerAccuracy(model,data):
@@ -132,7 +138,7 @@ def GetOrder(val,arr):
 def save_model(state, filename='saved_model.out'):
     torch.save(state, filename)
 
-def TrainModel(train_data,dev_data,word_em,D,load_model,model_mode,learning_rate,hidden_size):
+def TrainModel(train_data,dev_data,word_em,D,load_model,model_mode,learning_rate,hidden_size,pointer_type):
 
 	global UNKNOWNWORD
 	# hidden_size = 200
@@ -168,10 +174,10 @@ def TrainModel(train_data,dev_data,word_em,D,load_model,model_mode,learning_rate
 
 	model_saved_name = ""
 	try:
-		model_saved_name = model.name+"_"+str(model.embedding_size)+"_"+str(model.hidden_size)+"_"+str(model.direction)+"_"+str(learning_rate)+".save"
+		model_saved_name = model.name+"_"+str(model.embedding_size)+"_"+str(model.hidden_size)+"_"+str(model.direction)+"_"+str(learning_rate)+"_"+pointer_type+".save"
 	except:
 		# print(str(e))
-		model_saved_name = "model1_"+str(model.embedding_size)+"_"+str(model.hidden_size)+"_"+str(model.direction)+"_"+str(learning_rate)+".save"
+		model_saved_name = "model1_"+str(model.embedding_size)+"_"+str(model.hidden_size)+"_"+str(model.direction)+"_"+str(learning_rate)+"_"+pointer_type+".save"
 
 	cur_epoch = 0
 	trained_sample = 0
@@ -219,65 +225,35 @@ def TrainModel(train_data,dev_data,word_em,D,load_model,model_mode,learning_rate
 			batch_obj = [sample for sample in train_data[batch*batch_size:(batch+1)*batch_size]]
 			batch_context = [sample.context_token for sample in train_data[batch*batch_size:(batch+1)*batch_size]]
 			batch_question = [sample.question_token for sample in train_data[batch*batch_size:(batch+1)*batch_size]]
-			batch_start = [sample.start_token for sample in train_data[batch*batch_size:(batch+1)*batch_size]]
+			# batch_start = [sample.start_token for sample in train_data[batch*batch_size:(batch+1)*batch_size]]
 			
+
 			###########################################################
 			#GPU OPTION
 			###########################################################
-			true_start = autograd.Variable(torch.LongTensor([sample.start_token for sample in train_data[batch*batch_size:(batch+1)*batch_size]]).cuda(async=True))
-			# true_end = autograd.Variable(torch.LongTensor([sample.end_token-sample.start_token if sample.end_token-sample.start_token<max_answer_length else 0
-			# 	for sample in train_data[batch*batch_size:(batch+1)*batch_size]]).cuda(async=True))
+			true_pos = None
+			if pointer_type=="begin":
+				true_pos = autograd.Variable(torch.LongTensor([sample.start_token for sample in train_data[batch*batch_size:(batch+1)*batch_size]]).cuda(async=True))
+			elif pointer_type=="end":
+				true_pos = autograd.Variable(torch.LongTensor([sample.end_token for sample in train_data[batch*batch_size:(batch+1)*batch_size]]).cuda(async=True))
 			###########################################################
-			# true_start = autograd.Variable(torch.LongTensor([sample.start_token for sample in train_data[batch*batch_size:(batch+1)*batch_size]]))
-			# true_end = autograd.Variable(torch.LongTensor([sample.end_token-sample.start_token if sample.end_token-sample.start_token<max_answer_length else 0
-			# 	for sample in train_data[batch*batch_size:(batch+1)*batch_size]]))
+			# true_pos = None
+			# if pointer_type=="begin":
+			# 	true_pos = autograd.Variable(torch.LongTensor([sample.start_token for sample in train_data[batch*batch_size:(batch+1)*batch_size]]))
+			# elif pointer_type=="end":
+			# 	true_pos = autograd.Variable(torch.LongTensor([sample.end_token for sample in train_data[batch*batch_size:(batch+1)*batch_size]]))
 			###########################################################
 
 			optimizer.zero_grad()
+
 			###########################################################
-			my_start,context_length = model(batch_question,batch_context)
+			my_predict,context_length = model(batch_question,batch_context)
 			###########################################################
 			# my_start,my_end,context_length = model(batch_question,batch_context,batch_start)
 			###########################################################
 
-
 			###########################################################
-			#GPU OPTION
-			###########################################################
-			# batch_predict = my_start.data.numpy()
-			###########################################################
-			# batch_predict = my_start.data.cpu().numpy()
-			###########################################################
-			# # print("Batch predict: "+str(batch_predict.shape))
-			# for i in range(len(batch_predict)):
-			# 	sample = batch_obj[i]
-			# 	predict_start_score = batch_predict[i][0:context_length[i]]
-			# 	# predict_start = np.argmax(predict_start_score)
-			# 	true_start_score = predict_start_score[sample.start_token]
-			# 	start_pro += true_start_score
-			# 	max_pro += np.max(predict_start_score)
-			# 	true_order = GetOrder(true_start_score,predict_start_score)
-			# 	if true_order==1:
-			# 		start_acc += 1
-			# 	start_order += float(true_order)/len(sample.context_token)
-			# start_acc /= batch_size
-			# start_order /= batch_size
-			# start_pro /= batch_size
-			# max_pro /= batch_size
-
-
-			# predict_end_score = my_end.data[0].numpy()
-			# predict_end = np.argmax(predict_end_score)
-			# true_end_score = predict_end_score[sample.end_token]
-			# total_end_order += float(GetOrder(true_end_score,predict_end_score))/len(sample.context_token)
-			# total_end_dist_percent += float(np.abs(predict_end-sample.end_token))/len(sample.context_token)
-			###########################################################
-
-			# loss = CE(my_output,true_output)
-			###########################################################
-			# loss = NLL(my_start,true_start)+NLL(my_end,true_end)
-			###########################################################
-			loss = NLL(my_start,true_start)
+			loss = NLL(my_predict,true_pos)
 			###########################################################
 			# total_loss += loss.data[0]
 
@@ -305,7 +281,7 @@ def TrainModel(train_data,dev_data,word_em,D,load_model,model_mode,learning_rate
 			if sample_counter%10000==0:
 				print("Dev set performance")
 				###########################################################
-				Accuracy(model,dev_data)
+				Accuracy(model,dev_data,pointer_type)
 				###########################################################
 				# TwoPointerAccuracy(model,dev_data)
 				###########################################################
@@ -370,5 +346,6 @@ if __name__=="__main__":
 	model_mode = sys.argv[2]
 	learning_rate = float(sys.argv[3])
 	hidden_size = int(sys.argv[4])
-	TrainModel(train_data,dev_data,word_em,D,load_model,model_mode,learning_rate,hidden_size)
+	pointer_type = sys.argv[5]
+	TrainModel(train_data,dev_data,word_em,D,load_model,model_mode,learning_rate,hidden_size,pointer_type)
 
