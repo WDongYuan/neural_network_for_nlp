@@ -18,6 +18,7 @@ from ConcatLSTM import *
 ###########################################################
 import torch.backends.cudnn as cudnn
 ###########################################################
+
 def Accuracy(model,data,pointer_type):
 	random.shuffle(data)
 	data = data[0:200]
@@ -320,8 +321,6 @@ def Predict(train_data,test_data,word_em,D,learning_rate,hidden_size,model_path,
 			# predict_file.write("\""+batch_data[i].question_id+"\": \""+batch_data[i].context_token[predict_idx]+"\"")
 	predict_file.write("}")
 	predict_file.close()
-		
-
 
 
 
@@ -358,6 +357,7 @@ if __name__=="__main__":
 		qa_object = QA()
 	print("Total train sample: "+str(len(train_data)))
 	train_data_file.close()
+	train_data = sorted(train_data,key=lambda sample:sample.question_token,reverse=True)
 
 	##Read dev data
 	qa_object = QA()
@@ -366,14 +366,16 @@ if __name__=="__main__":
 		qa_object = QA()
 	print("Total dev sample: "+str(len(dev_data)))
 	dev_data_file.close()
+	dev_data = sorted(dev_data,key=lambda sample:sample.question_token,reverse=True)
 
 	word_em = ReadWrodEmbedding("./data/processed_word_embedding")
 	###########################################################
-	##Cut context
-	for tmp_qa in train_data:
-		tmp_qa.context_token = tmp_qa.context_token[0:CUT_CONTEXT]
-	for tmp_qa in dev_data:
-		tmp_qa.context_token = tmp_qa.context_token[0:CUT_CONTEXT]
+	# ##Cut context
+	# for tmp_qa in train_data:
+	# 	tmp_qa.context_token = tmp_qa.context_token[0:CUT_CONTEXT]
+	# for tmp_qa in dev_data:
+	# 	tmp_qa.context_token = tmp_qa.context_token[0:CUT_CONTEXT]
+
 
 	if sys.argv[1]=="predict":
 		model_path = sys.argv[2]

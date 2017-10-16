@@ -60,6 +60,9 @@ class ConcatLSTM(nn.Module):
 
 	def forward(self,question,passage):
 		self.batch_size = len(passage)
+
+		self.question_max_length = max([len(sample) for sample in question])
+		self.passage_max_length = max([len(sample) for sample in passage])
 		
 		self.q_hidden = self.init_hidden()
 		# print(self.q_hidden)
