@@ -86,8 +86,8 @@ def TrainModel(train_data,dev_data,word_em,D,load_model,model_mode,learning_rate
 	batch_size = 100
 	context_max_length = max([len(sample.context_token) for sample in train_data])
 	question_max_length = max([len(sample.question_token) for sample in train_data])
-	
-	max_end_token = max([len(sample.end_token) for sample in train_data])
+
+	max_end_token = max([sample.end_token for sample in train_data])
 	print("Max end token: "+str(max_end_token))
 	max_answer_length = 10
 	# print(context_max_length)
