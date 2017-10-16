@@ -285,7 +285,7 @@ def TrainModel(train_data,dev_data,word_em,D,load_model,model_mode,learning_rate
 			print_every_batch = 1
 			if sample_counter%print_every_batch==0:
 				print("Epoch "+str(cur_epoch)+": "+str(sample_counter)+" samples")
-				print(loss.data[0])
+				# print(loss.data[0])
 				# print("Loss: "+str(total_loss/print_every_batch))
 				# total_loss = 0.0
 				# print("Accuracy: "+str(start_acc))
@@ -299,7 +299,7 @@ def TrainModel(train_data,dev_data,word_em,D,load_model,model_mode,learning_rate
 				print("Time: "+str(time.time()-start_time))
 				start_time = time.time()
 				print("###########################################################")
-			if sample_counter%100==0:
+			if sample_counter%10000==0:
 				print("Dev set performance")
 				###########################################################
 				# Accuracy(model,dev_data)
