@@ -225,8 +225,8 @@ def TrainModel(train_data,dev_data,word_em,D,load_model,model_mode,learning_rate
 			#GPU OPTION
 			###########################################################
 			true_start = autograd.Variable(torch.LongTensor([sample.start_token for sample in train_data[batch*batch_size:(batch+1)*batch_size]]).cuda(async=True))
-			true_end = autograd.Variable(torch.LongTensor([sample.end_token-sample.start_token if sample.end_token-sample.start_token<max_answer_length else 0
-				for sample in train_data[batch*batch_size:(batch+1)*batch_size]]).cuda(async=True))
+			# true_end = autograd.Variable(torch.LongTensor([sample.end_token-sample.start_token if sample.end_token-sample.start_token<max_answer_length else 0
+			# 	for sample in train_data[batch*batch_size:(batch+1)*batch_size]]).cuda(async=True))
 			###########################################################
 			# true_start = autograd.Variable(torch.LongTensor([sample.start_token for sample in train_data[batch*batch_size:(batch+1)*batch_size]]))
 			# true_end = autograd.Variable(torch.LongTensor([sample.end_token-sample.start_token if sample.end_token-sample.start_token<max_answer_length else 0
