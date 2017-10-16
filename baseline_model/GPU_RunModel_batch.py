@@ -19,7 +19,7 @@ import torch.backends.cudnn as cudnn
 ###########################################################
 def Accuracy(model,data):
 	random.shuffle(data)
-	data = data[0:1000]
+	data = data[0:500]
 	batch_size = len(data)
 
 	batch_context = [sample.context_token for sample in data]
