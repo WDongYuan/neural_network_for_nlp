@@ -110,7 +110,8 @@ def TrainModel(train_data,dev_data,word_em,D,load_model,model_mode,learning_rate
 	if model==None:
 		print("No model selected.")
 		return
-	optimizer = optim.SGD(model.parameters(), lr=learning_rate)
+	# optimizer = optim.SGD(model.parameters(), lr=learning_rate,momentum=0.9)
+	optimizer = optim.Adadelta(model.parameters(), lr=learning_rate,,momentum=0.9)
 
 	model_saved_name = ""
 	try:
