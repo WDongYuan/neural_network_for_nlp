@@ -26,9 +26,9 @@ def Accuracy(model,data,pointer_type):
 	batch_question = [sample.question_token for sample in data]
 	my_predict,context_length = model(batch_question,batch_context)
 
-	order = 0.0
-	acc = 0.0
-	pro = 0.0
+	start_order = 0.0
+	start_acc = 0.0
+	start_pro = 0.0
 	max_pro = 0.0
 
 	###########################################################
