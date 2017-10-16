@@ -10,7 +10,7 @@ import random
 import time
 import sys
 # from GPU_ModelBatch import *
-# from SoftmaxAttention import *
+from SoftmaxAttention import *
 from ConcatLSTM import *
 # from TwoPointerModel import *
 ###########################################################
@@ -105,8 +105,8 @@ def TrainModel(train_data,dev_data,word_em,D,load_model,model_mode,learning_rate
 	model=None
 	# if model_mode=="concat_attention":
 	# 	model = ModelBatch(embedding_size,hidden_size,direction,word_em,batch_size,context_max_length,question_max_length)
-	# if model_mode=="softmax_attention":
-	# 	model = SoftmaxAttentionModel(embedding_size,hidden_size,direction,word_em,batch_size,context_max_length,question_max_length)
+	if model_mode=="softmax_attention":
+		model = SoftmaxAttentionModel(embedding_size,hidden_size,direction,word_em,batch_size,context_max_length,question_max_length)
 	if model_mode=="concat_lstm":
 		model = ConcatLSTM(embedding_size,hidden_size,direction,word_em,batch_size,context_max_length,question_max_length)
 	# if model_mode=="two_pointer":
