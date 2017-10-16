@@ -274,8 +274,11 @@ def TrainModel(train_data,dev_data,word_em,D,load_model,model_mode,learning_rate
 			###########################################################
 
 			# loss = CE(my_output,true_output)
-			loss = NLL(my_start,true_start)+NLL(my_end,true_end)
-			# loss = NLL(my_start,true_start)
+			###########################################################
+			# loss = NLL(my_start,true_start)+NLL(my_end,true_end)
+			###########################################################
+			loss = NLL(my_start,true_start)
+			###########################################################
 			# total_loss += loss.data[0]
 
 			loss.backward()
