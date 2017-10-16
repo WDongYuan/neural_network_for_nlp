@@ -43,7 +43,7 @@ def Accuracy(model,data,pointer_type):
 		predict_start_score = batch_predict[i][0:context_length[i]]
 
 		true_start_score = None
-		if pointer_type=="begin":
+		if pointer_type=="start":
 			true_start_score = predict_start_score[sample.start_token]
 		elif pointer_type=="end":
 			true_start_score = predict_start_score[sample.end_token]
@@ -169,7 +169,7 @@ def TrainModel(train_data,dev_data,word_em,D,load_model,model_mode,learning_rate
 			#GPU OPTION
 			###########################################################
 			true_pos = None
-			if pointer_type=="begin":
+			if pointer_type=="start":
 				true_pos = autograd.Variable(torch.LongTensor([sample.start_token for sample in train_data[batch*batch_size:(batch+1)*batch_size]]).cuda(async=True))
 			elif pointer_type=="end":
 				true_pos = autograd.Variable(torch.LongTensor([sample.end_token for sample in train_data[batch*batch_size:(batch+1)*batch_size]]).cuda(async=True))
