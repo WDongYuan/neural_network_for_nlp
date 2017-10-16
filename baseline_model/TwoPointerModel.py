@@ -11,7 +11,7 @@ import torch.optim as optim
 ###########################################################
 #GPU OPTION
 ###########################################################
-import torch.backends.cudnn as cudnn
+# import torch.backends.cudnn as cudnn
 ###########################################################
 UNKNOWNWORD = "unknownword"
 
@@ -55,9 +55,9 @@ class TwoPointerModel(nn.Module):
 		###########################################################
 		#GPU OPTION
 		###########################################################
-		return autograd.Variable(torch.rand(self.direction,self.batch_size,self.hidden_size).cuda(async=True))
+		# return autograd.Variable(torch.rand(self.direction,self.batch_size,self.hidden_size).cuda(async=True))
 		###########################################################
-		# return autograd.Variable(torch.rand(self.direction,self.batch_size,self.hidden_size))
+		return autograd.Variable(torch.rand(self.direction,self.batch_size,self.hidden_size))
 		###########################################################
 
 	def forward(self,question,passage,start_point=None):
@@ -86,9 +86,9 @@ class TwoPointerModel(nn.Module):
 			###########################################################
 			# GPU OPTION
 			###########################################################
-			start_point = np.argmax(start_pro.data.cpu().numpy(),1)
+			# start_point = np.argmax(start_pro.data.cpu().numpy(),1)
 			###########################################################
-			# start_point = np.argmax(start_pro.data.numpy(),1)
+			start_point = np.argmax(start_pro.data.numpy(),1)
 			###########################################################
 		#Select out the answer range
 		answer_range_list = [[j%self.passage_max_length for j in range(start_point[i],start_point[i]+self.max_answer_length)]for i in range(len(start_point))]
@@ -96,9 +96,9 @@ class TwoPointerModel(nn.Module):
 		###########################################################
 		#GPU OPTION
 		###########################################################
-		answer_range_list = Variable(torch.LongTensor(answer_range_list).cuda(async=True))
+		# answer_range_list = Variable(torch.LongTensor(answer_range_list).cuda(async=True))
 		###########################################################
-		# answer_range_list = Variable(torch.LongTensor(answer_range_list))
+		answer_range_list = Variable(torch.LongTensor(answer_range_list))
 		###########################################################
 		all_passage = p_lstm_out.contiguous().view(-1,self.direction*self.hidden_size)
 		answer_range = torch.index_select(all_passage,0,answer_range_list).view(self.batch_size,self.max_answer_length,-1)
@@ -129,9 +129,9 @@ class TwoPointerModel(nn.Module):
 		###########################################################
 		#GPU OPTION
 		###########################################################
-		batch_embedding = Variable(torch.from_numpy(batch_embedding).float().cuda(async=True))
+		# batch_embedding = Variable(torch.from_numpy(batch_embedding).float().cuda(async=True))
 		###########################################################
-		# batch_embedding = Variable(torch.from_numpy(batch_embedding).float())
+		batch_embedding = Variable(torch.from_numpy(batch_embedding).float())
 		###########################################################
 		return batch_embedding,sent_length
 
