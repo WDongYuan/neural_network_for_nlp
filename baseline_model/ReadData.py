@@ -4,13 +4,14 @@ import json
 # import matplotlib.pyplot as plt
 UNKNOWNWORD = "unknownword"
 class QA:
-	def __init__(self,context=None,question=None,answer=None,answer_start=-1):
+	def __init__(self,context=None,question=None,answer=None,answer_start=-1,question_id=None):
 		self.token_split_symbol = "##"
 
 		self.context = context
 		self.question = question
 		self.answer = answer
 		self.answer_start = int(answer_start)
+		self.question_id = question_id
 		if self.context==None:
 			return
 		###########################################################
@@ -78,6 +79,7 @@ class QA:
 	def SaveToFile(self,file_token):
 		file_token.write(self.context.encode("utf-8")+"\n")
 		file_token.write(self.question.encode("utf-8")+"\n")
+		file_token.write(self.question_id.encode("utf-8")+"\n")
 		file_token.write(self.answer.encode("utf-8")+"\n")
 		file_token.write(str(self.answer_start).encode("utf-8")+"\n")
 		file_token.write(self.token_split_symbol.join(self.context_token).encode("utf-8")+"\n")
@@ -93,6 +95,7 @@ class QA:
 		try:
 			self.context = file_token.readline().strip()
 			self.question = file_token.readline().strip()
+			self.question_id = file_token.readline().strip()
 			self.answer = file_token.readline().strip()
 			self.answer_start = int(file_token.readline().strip())
 			self.context_token = file_token.readline().strip().split(self.token_split_symbol)
@@ -152,7 +155,7 @@ def ReadTrainData(path="./data/train-v1.1.json"):
 					print(counter)
 				# if counter==1000:
 				# 	return qa_data
-				qa_data.append(QA(paragraph["context"],one_qa["question"],one_qa["answers"][0]["text"],int(one_qa["answers"][0]["answer_start"])))
+				qa_data.append(QA(paragraph["context"],one_qa["question"],one_qa["answers"][0]["text"],int(one_qa["answers"][0]["answer_start"]),one_qa["id"]))
 	return qa_data
 
 def CreateUnknownWord(qa_list,word_em,D,save_path="./data/processed_word_embedding"):
@@ -197,8 +200,8 @@ if __name__=="__main__":
 	###########################################################
 	##Read train data from json file and then save it.
 	# tmp_counter = 0
-	# train_data = ReadTrainData("./data/dev-v1.1.json")
-	# save_train_data_file = open("./data/dev_data.out","w+")
+	# train_data = ReadTrainData("./data/train-v1.1.json")
+	# save_train_data_file = open("./data/train_data.out","w+")
 	# for qa in train_data:
 	# 	tmp_counter += 1
 	# 	qa.SaveToFile(save_train_data_file)

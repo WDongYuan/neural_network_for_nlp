@@ -64,69 +64,6 @@ def Accuracy(model,data,pointer_type):
 	print("Point probability: "+str(start_pro))
 	print("Max probability: "+str(max_pro))
 
-def TwoPointerAccuracy(model,data):
-	random.shuffle(data)
-	data = data[0:500]
-	batch_size = len(data)
-
-	batch_context = [sample.context_token for sample in data]
-	batch_question = [sample.question_token for sample in data]
-	my_start,my_end,context_length = model(batch_question,batch_context)
-
-	start_order = 0.0
-	start_acc = 0.0
-	start_pro = 0.0
-	start_max_pro = 0.0
-
-	end_order = 0.0
-	end_acc = 0.0
-	end_pro = 0.0
-	end_max_pro = 0.0
-
-	###########################################################
-	#GPU OPTION
-	###########################################################
-	start_batch_predict = my_start.data.cpu().numpy()
-	end_batch_predict = my_end.data.cpu().numpy()
-	###########################################################
-	# start_batch_predict = my_start.data.numpy()
-	# end_batch_predict = my_end.data.numpy()
-	###########################################################
-	for i in range(len(start_batch_predict)):
-		sample = data[i]
-		predict_start_score = start_batch_predict[i][0:context_length[i]]
-		true_start_score = predict_start_score[sample.start_token]
-		start_pro += true_start_score
-		start_max_pro += np.max(predict_start_score)
-
-		##Find the end point
-		predict_start_idx = np.argmax(predict_start_score)
-		predict_end_idx = predict_start_idx+np.argmax(end_batch_predict[i])
-		if predict_end_idx==sample.end_token:
-			end_acc += 1
-		if sample.end_token<predict_start_idx+len(end_batch_predict[i]) and sample.end_token>=predict_start_idx:
-			end_pro += end_batch_predict[i][sample.end_token-predict_start_idx]
-
-		true_order = GetOrder(true_start_score,predict_start_score)
-		if true_order==1:
-			start_acc += 1
-		start_order += float(true_order)/len(sample.context_token)
-	start_acc /= batch_size
-	start_order /= batch_size
-	start_pro /= batch_size
-	start_max_pro /= batch_size
-	end_acc /= batch_size
-	end_pro /= batch_size
-
-	print("Start accuracy: "+str(start_acc))
-	print("Start point order: "+str(start_order))
-	print("Start point probability: "+str(start_pro))
-	print("Start max probability: "+str(start_max_pro))
-	print("End accuracy: "+str(end_acc))
-	print("End point probability: "+str(end_pro))
-
-
-
 
 
 def GetOrder(val,arr):
@@ -238,7 +175,7 @@ def TrainModel(train_data,dev_data,word_em,D,load_model,model_mode,learning_rate
 				true_pos = autograd.Variable(torch.LongTensor([sample.end_token for sample in train_data[batch*batch_size:(batch+1)*batch_size]]).cuda(async=True))
 			###########################################################
 			# true_pos = None
-			# if pointer_type=="begin":
+			# if pointer_type=="start":
 			# 	true_pos = autograd.Variable(torch.LongTensor([sample.start_token for sample in train_data[batch*batch_size:(batch+1)*batch_size]]))
 			# elif pointer_type=="end":
 			# 	true_pos = autograd.Variable(torch.LongTensor([sample.end_token for sample in train_data[batch*batch_size:(batch+1)*batch_size]]))
@@ -295,6 +232,83 @@ def TrainModel(train_data,dev_data,word_em,D,load_model,model_mode,learning_rate
 				print("###########################################################")
 	print("Done!")
 
+def Predict(train_data,test_data,word_em,D,learning_rate,hidden_size,model_path,save_path):
+
+	global UNKNOWNWORD
+	embedding_size = D
+	epoch_num = 100
+	direction = 2
+	batch_size = 100
+	context_max_length = max([len(sample.context_token) for sample in train_data])
+	question_max_length = max([len(sample.question_token) for sample in train_data])
+
+	# test_data = test_data[0:1000]
+
+	###########################################################
+	#GPU OPTION
+	###########################################################
+	cudnn.benchmark = True
+	###########################################################
+	
+	model = SoftmaxAttentionModel(embedding_size,hidden_size,direction,word_em,batch_size,context_max_length,question_max_length)
+	optimizer = optim.SGD(model.parameters(), lr=learning_rate)
+
+	print("Loading model...")
+	loaded_data = None
+	loaded_data = torch.load(model_path)
+	cur_epoch = loaded_data['epoch']
+	model.load_state_dict(loaded_data['state_dict'])
+	optimizer.load_state_dict(loaded_data['optimizer'])
+	trained_sample = loaded_data['trained_sample']
+
+	###########################################################
+	#GPU OPTION
+	###########################################################
+	model.cuda()
+	###########################################################
+	print("Predicting...")
+	data = test_data
+	test_context = [sample.context_token for sample in data]
+	test_question = [sample.question_token for sample in data]
+
+	predict_file = open(save_path,"w+")
+	predict_file.write("{")
+	is_first = True
+	for batch_i in range(len(data)/batch_size+1):
+		begin = batch_i*batch_size
+		end = (batch_i+1)*batch_size
+		if begin>=len(data):
+			break
+		elif end>len(data):
+			end = len(data)
+		print("Sample "+str(begin)+" to "+str(end))
+		batch_data = data[begin:end]
+		batch_context = test_context[begin:end]
+		batch_question = test_question[begin:end]
+
+		my_predict,context_length = model(batch_question,batch_context)
+
+		###########################################################
+		#GPU OPTION
+		###########################################################
+		batch_predict = my_predict.data.cpu().numpy()
+		###########################################################
+		# batch_predict = my_predict.data.numpy()
+		###########################################################
+		for i in range(len(batch_predict)):
+			tmp_score = batch_predict[i][0:context_length[i]]
+			predict_idx = np.argmax(tmp_score)
+			if not is_first:
+				predict_file.write(", ")
+			else:
+				is_first = False
+			predict_file.write("\""+batch_data[i].question_id+"\": \""+" ".join(batch_data[i].context_token[predict_idx:predict_idx+2])+"\"")
+	predict_file.write("}")
+	predict_file.close()
+		
+
+
+
 
 
 
@@ -302,6 +316,7 @@ if __name__=="__main__":
 	if len(sys.argv)==1:
 		print("python GPU_RunModel_batch.py load softmax_attention 0.1(learning_rate) 200(hidden_size)")
 		print("python GPU_RunModel_batch.py not_load concat_attention 0.1(learning_rate) 200(hidden_size)")
+		print("python GPU_RunModel_batch.py predict softmax_attention_50_200_2_0.1_start.save dev_predict")
 		exit()
 
 	D = 50
@@ -337,10 +352,15 @@ if __name__=="__main__":
 	dev_data_file.close()
 
 	word_em = ReadWrodEmbedding("./data/processed_word_embedding")
-	# print(len(train_data))
-	# print(len(word_em))
-	# print("Reading finish!")
 	###########################################################
+
+	if sys.argv[1]=="predict":
+		model_path = sys.argv[2]
+		save_path = sys.argv[3]
+		learning_rate = 0.1
+		hidden_size = 200
+		Predict(train_data,dev_data,word_em,D,learning_rate,hidden_size,model_path,save_path)
+		exit()
 
 	load_model = sys.argv[1]
 	model_mode = sys.argv[2]
