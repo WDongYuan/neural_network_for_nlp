@@ -87,7 +87,7 @@ class ConcatLSTM(nn.Module):
 		# question_last_hidden = torch.index_select(tmp_q,0,Variable(torch.LongTensor(all_question_length))).view(self.batch_size,self.direction,self.hidden_size)
 		###########################################################
 
-		p_lstm_out, (self.p_hidden,self.p_c_n) = self.passage_lstm(passage_embedding,(torch.transpose(question_last_hidden,0,1),self.p_c_n))
+		p_lstm_out, (self.p_hidden,self.p_c_n) = self.passage_lstm(passage_embedding,(torch.transpose(question_last_hidden,0,1).contiguous(),self.p_c_n))
 
 		start_align_score = self.start_att_linear(p_lstm_out)
 		start_pro = self.softmax(start_align_score.view(self.batch_size,self.passage_max_length))
