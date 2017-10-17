@@ -11,7 +11,7 @@ import time
 import sys
 # from GPU_ModelBatch import *
 from SoftmaxAttention import *
-from ConcatLSTM import *
+# from ConcatLSTM import *
 # from TwoPointerModel import *
 ###########################################################
 #GPU OPTION
@@ -81,7 +81,7 @@ def TrainModel(train_data,dev_data,word_em,D,load_model,model_mode,learning_rate
 
 	global UNKNOWNWORD
 	# hidden_size = 200
-	layer = 2
+	layer = 1
 	embedding_size = D
 	epoch_num = 100
 	direction = 2
@@ -108,8 +108,8 @@ def TrainModel(train_data,dev_data,word_em,D,load_model,model_mode,learning_rate
 	# 	model = ModelBatch(embedding_size,hidden_size,direction,word_em,batch_size,context_max_length,question_max_length)
 	if model_mode=="softmax_attention":
 		model = SoftmaxAttentionModel(embedding_size,hidden_size,direction,word_em,batch_size,context_max_length,question_max_length,layer)
-	if model_mode=="concat_lstm":
-		model = ConcatLSTM(embedding_size,hidden_size,direction,word_em,batch_size,context_max_length,question_max_length)
+	# if model_mode=="concat_lstm":
+	# 	model = ConcatLSTM(embedding_size,hidden_size,direction,word_em,batch_size,context_max_length,question_max_length)
 	# if model_mode=="two_pointer":
 	# 	model = TwoPointerModel(embedding_size,hidden_size,direction,word_em,batch_size,context_max_length,question_max_length,max_answer_length)
 	if model==None:
@@ -252,6 +252,7 @@ def Predict(train_data,test_data,word_em,D,learning_rate,hidden_size,model_path,
 	batch_size = 100
 	context_max_length = max([len(sample.context_token) for sample in train_data])
 	question_max_length = max([len(sample.question_token) for sample in train_data])
+	layer = 2
 
 	# test_data = test_data[0:1000]
 
@@ -261,7 +262,7 @@ def Predict(train_data,test_data,word_em,D,learning_rate,hidden_size,model_path,
 	cudnn.benchmark = True
 	###########################################################
 	
-	model = SoftmaxAttentionModel(embedding_size,hidden_size,direction,word_em,batch_size,context_max_length,question_max_length)
+	model = SoftmaxAttentionModel(embedding_size,hidden_size,direction,word_em,batch_size,context_max_length,question_max_length,layer)
 	# optimizer = optim.SGD(model.parameters(), lr=learning_rate)
 	optimizer = optim.Adadelta(model.parameters(), lr=learning_rate)
 
