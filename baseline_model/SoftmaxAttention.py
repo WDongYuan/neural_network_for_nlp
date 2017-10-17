@@ -47,7 +47,8 @@ class SoftmaxAttentionModel(nn.Module):
 		###########################################################
 		##Added later
 		self.qp_linear = nn.Linear(self.direction*self.hidden_size,self.direction*self.hidden_size)
-		self.qp_relu = nn.ReLU()
+		# self.qp_relu = nn.ReLU()
+		self.qp_sigmoid = nn.Sigmoid()
 		###########################################################
 
 		self.start_att_linear = nn.Linear(self.question_max_length,1)
@@ -105,10 +106,11 @@ class SoftmaxAttentionModel(nn.Module):
 
 		###########################################################
 		##Added later
-		relu_batch_full_align = self.qp_relu(batch_full_align)
+		# relu_batch_full_align = self.qp_relu(batch_full_align)
+		sigmoid_batch_full_align = self.qp_sigmoid(batch_full_align)
 		###########################################################
 
-		start_align_score = self.start_att_linear(relu_batch_full_align)
+		start_align_score = self.start_att_linear(sigmoid_batch_full_align)
 		start_pro = self.softmax(start_align_score.view(self.batch_size,-1))
 
 		return start_pro,passage_length

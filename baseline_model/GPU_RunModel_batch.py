@@ -272,7 +272,7 @@ def TrainModel(train_data,dev_data,word_em,D,load_model,model_mode,learning_rate
 			if sample_counter%1000==0:
 				print("Dev set performance")
 				###########################################################
-				NewAccuracy(model,dev_data,pointer_type)
+				# NewAccuracy(model,dev_data,pointer_type)
 				Accuracy(model,dev_data,pointer_type)
 				###########################################################
 				# TwoPointerAccuracy(model,dev_data)
