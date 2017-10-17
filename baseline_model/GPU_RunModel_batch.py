@@ -18,6 +18,41 @@ from SoftmaxAttention import *
 ###########################################################
 import torch.backends.cudnn as cudnn
 ###########################################################
+def NewAccuracy(model,data,pointer_type):
+	print("Predicting...")
+	data = test_data
+	test_context = [sample.context_token for sample in data]
+	test_question = [sample.question_token for sample in data]
+	start_acc = 0.0
+	for batch_i in range(int(len(data)/batch_size)+1):
+		begin = batch_i*batch_size
+		end = (batch_i+1)*batch_size
+		if begin>=len(data):
+			break
+		elif end>len(data):
+			end = len(data)
+		batch_data = data[begin:end]
+		batch_context = test_context[begin:end]
+		batch_question = test_question[begin:end]
+
+		my_predict,context_length = model(batch_question,batch_context)
+
+		###########################################################
+		#GPU OPTION
+		###########################################################
+		batch_predict = my_predict.data.cpu().numpy()
+		###########################################################
+		# batch_predict = my_predict.data.numpy()
+		###########################################################
+		for i in range(len(batch_predict)):
+			tmp_score = batch_predict[i][0:context_length[i]]
+			predict_idx = np.argmax(tmp_score)
+			if predict_idx==batch_data[i].start_token:
+				start_acc += 1
+	start_acc /= len(data)
+	print("New accuracy: "+str(start_acc))
+
+
 
 def Accuracy(model,data,pointer_type):
 	random.shuffle(data)
@@ -229,6 +264,7 @@ def TrainModel(train_data,dev_data,word_em,D,load_model,model_mode,learning_rate
 			if sample_counter%10000==0:
 				print("Dev set performance")
 				###########################################################
+				NewAccuracy(model,dev_data,pointer_type)
 				Accuracy(model,dev_data,pointer_type)
 				###########################################################
 				# TwoPointerAccuracy(model,dev_data)
