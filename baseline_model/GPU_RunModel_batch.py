@@ -81,7 +81,7 @@ def TrainModel(train_data,dev_data,word_em,D,load_model,model_mode,learning_rate
 
 	global UNKNOWNWORD
 	# hidden_size = 200
-	layer = 1
+	layer = 2
 	embedding_size = D
 	epoch_num = 100
 	direction = 2

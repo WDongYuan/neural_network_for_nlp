@@ -36,15 +36,18 @@ class SoftmaxAttentionModel(nn.Module):
 
 		# self.word_embeddings = nn.Embedding(voc_size, embedding_size)
 		bidirectional_flag = True if self.direction==2 else False
-		# self.passage_lstm = nn.LSTM(embedding_size, hidden_size,num_layers=self.layer,bidirectional=bidirectional_flag,batch_first=True)
-		# self.question_lstm = nn.LSTM(embedding_size, hidden_size,num_layers=self.layer,bidirectional=bidirectional_flag,batch_first=True)
-		self.passage_gru = nn.GRU(embedding_size, hidden_size,num_layers=self.layer,bidirectional=bidirectional_flag,batch_first=True)
-		self.question_gru = nn.GRU(embedding_size, hidden_size,num_layers=self.layer,bidirectional=bidirectional_flag,batch_first=True)
+		###########################################################
+		self.passage_lstm = nn.LSTM(embedding_size, hidden_size,num_layers=self.layer,bidirectional=bidirectional_flag,batch_first=True)
+		self.question_lstm = nn.LSTM(embedding_size, hidden_size,num_layers=self.layer,bidirectional=bidirectional_flag,batch_first=True)
+		###########################################################
+		# self.passage_gru = nn.GRU(embedding_size, hidden_size,num_layers=self.layer,bidirectional=bidirectional_flag,batch_first=True)
+		# self.question_gru = nn.GRU(embedding_size, hidden_size,num_layers=self.layer,bidirectional=bidirectional_flag,batch_first=True)
+		###########################################################
 
 		###########################################################
 		##Added later
 		self.qp_linear = nn.Linear(self.direction*self.hidden_size,self.direction*self.hidden_size)
-		self.qp_sigmoid = nn.Sigmoid()
+		self.qp_relu = nn.Relu()
 		###########################################################
 
 		self.start_att_linear = nn.Linear(self.question_max_length,1)
@@ -82,25 +85,30 @@ class SoftmaxAttentionModel(nn.Module):
 		#lstm_out: (seq_len, batch, hidden_size * num_directions)
 		#hidden: (num_layers * num_directions, batch, hidden_size)
 		#c_n: (num_layers * num_directions, batch, hidden_size)
-		# q_lstm_out, (self.q_hidden,self.q_c_n) = self.question_lstm(question_embedding,(self.q_hidden,self.q_c_n))
-		# p_lstm_out, (self.p_hidden,self.p_c_n) = self.passage_lstm(passage_embedding, (self.p_hidden,self.p_c_n))
-		q_lstm_out, _ = self.question_gru(question_embedding,self.q_hidden)
-		p_lstm_out, _ = self.passage_gru(passage_embedding, self.p_hidden)
+
+		###########################################################
+		q_lstm_out, (self.q_hidden,self.q_c_n) = self.question_lstm(question_embedding,(self.q_hidden,self.q_c_n))
+		p_lstm_out, (self.p_hidden,self.p_c_n) = self.passage_lstm(passage_embedding, (self.p_hidden,self.p_c_n))
+		###########################################################
+		# q_lstm_out, _ = self.question_gru(question_embedding,self.q_hidden)
+		# p_lstm_out, _ = self.passage_gru(passage_embedding, self.p_hidden)
+		###########################################################
 
 		###########################################################
 		##Added later
 		new_q_lstm_out = self.qp_linear(q_lstm_out)
 		new_p_lstm_out = self.qp_linear(p_lstm_out)
+		batch_full_align = torch.bmm(new_p_lstm_out,torch.transpose(new_q_lstm_out,1,2))
 		###########################################################
-
-		batch_full_align = torch.bmm(p_lstm_out,torch.transpose(q_lstm_out,1,2))
+		# batch_full_align = torch.bmm(p_lstm_out,torch.transpose(q_lstm_out,1,2))
+		###########################################################
 
 		###########################################################
 		##Added later
-		sigmoid_batch_full_align = self.qp_sigmoid(batch_full_align)
+		relu_batch_full_align = self.qp_relu(batch_full_align)
 		###########################################################
 
-		start_align_score = self.start_att_linear(sigmoid_batch_full_align)
+		start_align_score = self.start_att_linear(relu_batch_full_align)
 		start_pro = self.softmax(start_align_score.view(self.batch_size,-1))
 
 		return start_pro,passage_length
