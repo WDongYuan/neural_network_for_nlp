@@ -81,6 +81,7 @@ def TrainModel(train_data,dev_data,word_em,D,load_model,model_mode,learning_rate
 
 	global UNKNOWNWORD
 	# hidden_size = 200
+	layer = 2
 	embedding_size = D
 	epoch_num = 100
 	direction = 2
@@ -106,7 +107,7 @@ def TrainModel(train_data,dev_data,word_em,D,load_model,model_mode,learning_rate
 	# if model_mode=="concat_attention":
 	# 	model = ModelBatch(embedding_size,hidden_size,direction,word_em,batch_size,context_max_length,question_max_length)
 	if model_mode=="softmax_attention":
-		model = SoftmaxAttentionModel(embedding_size,hidden_size,direction,word_em,batch_size,context_max_length,question_max_length)
+		model = SoftmaxAttentionModel(embedding_size,hidden_size,direction,word_em,batch_size,context_max_length,question_max_length,layer)
 	if model_mode=="concat_lstm":
 		model = ConcatLSTM(embedding_size,hidden_size,direction,word_em,batch_size,context_max_length,question_max_length)
 	# if model_mode=="two_pointer":
@@ -119,10 +120,12 @@ def TrainModel(train_data,dev_data,word_em,D,load_model,model_mode,learning_rate
 
 	model_saved_name = ""
 	try:
-		model_saved_name = model.name+"_"+str(model.embedding_size)+"_"+str(model.hidden_size)+"_"+str(model.direction)+"_"+str(learning_rate)+"_"+pointer_type+".save"
+		model_saved_name = model.name+"_"+str(model.embedding_size)+"_"+str(model.hidden_size)+"_"\
+		+str(model.direction)+"_"+str(learning_rate)+"_"+pointer_type+"_"+model.layer+".save"
 	except:
 		# print(str(e))
-		model_saved_name = "model1_"+str(model.embedding_size)+"_"+str(model.hidden_size)+"_"+str(model.direction)+"_"+str(learning_rate)+"_"+pointer_type+".save"
+		model_saved_name = "model1_"+str(model.embedding_size)+"_"+str(model.hidden_size)+"_"\
+		+str(model.direction)+"_"+str(learning_rate)+"_"+pointer_type+"_"+model.layer+".save"
 
 	cur_epoch = 0
 	trained_sample = 0

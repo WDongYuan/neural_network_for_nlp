@@ -16,7 +16,7 @@ import torch.backends.cudnn as cudnn
 UNKNOWNWORD = "unknownword"
 
 class SoftmaxAttentionModel(nn.Module):
-	def __init__(self,embedding_size,hidden_size,direction,word_em,batch_size,context_max_length,question_max_length):
+	def __init__(self,embedding_size,hidden_size,direction,word_em,batch_size,context_max_length,question_max_length,layer):
 		super(SoftmaxAttentionModel, self).__init__()
 		self.name = "softmax_attention"
 
@@ -27,6 +27,7 @@ class SoftmaxAttentionModel(nn.Module):
 		self.embedding_size = embedding_size
 		self.passage_max_length = context_max_length
 		self.question_max_length = question_max_length
+		self.layer = layer
 
 		self.q_hidden = self.init_hidden()
 		self.q_c_n = self.init_hidden()
@@ -35,8 +36,14 @@ class SoftmaxAttentionModel(nn.Module):
 
 		# self.word_embeddings = nn.Embedding(voc_size, embedding_size)
 		bidirectional_flag = True if self.direction==2 else False
-		self.passage_lstm = nn.LSTM(embedding_size, hidden_size,bidirectional=bidirectional_flag,batch_first=True)
-		self.question_lstm = nn.LSTM(embedding_size, hidden_size,bidirectional=bidirectional_flag,batch_first=True)
+		self.passage_lstm = nn.LSTM(embedding_size, hidden_size,num_layers=self.layer,bidirectional=bidirectional_flag,batch_first=True)
+		self.question_lstm = nn.LSTM(embedding_size, hidden_size,num_layers=self.layer,bidirectional=bidirectional_flag,batch_first=True)
+
+		###########################################################
+		##Added later
+		self.qp_linear = nn.Linear(self.direction*self.hidden_size,self.direction*self.hidden_size)
+		self.qp_sigmoid = nn.Sigmoid()
+		###########################################################
 
 		self.start_att_linear = nn.Linear(self.question_max_length,1)
 		# self.start_att_tanh = nn.Tanh()
@@ -53,7 +60,7 @@ class SoftmaxAttentionModel(nn.Module):
 		###########################################################
 		#GPU OPTION
 		###########################################################
-		return autograd.Variable(torch.rand(self.direction,self.batch_size,self.hidden_size).cuda(async=True))
+		return autograd.Variable(torch.rand(self.direction*self.layer,self.batch_size,self.hidden_size).cuda(async=True))
 		###########################################################
 		# return autograd.Variable(torch.rand(self.direction,self.batch_size,self.hidden_size))
 		###########################################################
@@ -76,8 +83,20 @@ class SoftmaxAttentionModel(nn.Module):
 		q_lstm_out, (self.q_hidden,self.q_c_n) = self.question_lstm(question_embedding,(self.q_hidden,self.q_c_n))
 		p_lstm_out, (self.p_hidden,self.p_c_n) = self.passage_lstm(passage_embedding, (self.p_hidden,self.p_c_n))
 
+		###########################################################
+		##Added later
+		new_q_lstm_out = self.qp_linear(q_lstm_out)
+		new_p_lstm_out = self.qp_linear(p_lstm_out)
+		###########################################################
+
 		batch_full_align = torch.bmm(p_lstm_out,torch.transpose(q_lstm_out,1,2))
-		start_align_score = self.start_att_linear(batch_full_align)
+
+		###########################################################
+		##Added later
+		sigmoid_batch_full_align = self.qp_sigmoid(batch_full_align)
+		###########################################################
+
+		start_align_score = self.start_att_linear(sigmoid_batch_full_align)
 		start_pro = self.softmax(start_align_score.view(self.batch_size,-1))
 
 		return start_pro,passage_length
