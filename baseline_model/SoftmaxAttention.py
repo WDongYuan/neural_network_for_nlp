@@ -47,7 +47,7 @@ class SoftmaxAttentionModel(nn.Module):
 		###########################################################
 		##Added later
 		self.qp_linear = nn.Linear(self.direction*self.hidden_size,self.direction*self.hidden_size)
-		self.qp_relu = nn.Relu()
+		self.qp_relu = nn.ReLU()
 		###########################################################
 
 		self.start_att_linear = nn.Linear(self.question_max_length,1)
