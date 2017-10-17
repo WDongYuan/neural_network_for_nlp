@@ -269,7 +269,7 @@ def TrainModel(train_data,dev_data,word_em,D,load_model,model_mode,learning_rate
 				print("Time: "+str(time.time()-start_time))
 				start_time = time.time()
 				print("###########################################################")
-			if sample_counter%1000==0:
+			if sample_counter%10000==0:
 				print("Dev set performance")
 				###########################################################
 				# NewAccuracy(model,dev_data,pointer_type)
