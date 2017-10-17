@@ -235,7 +235,8 @@ def TrainModel(train_data,dev_data,word_em,D,load_model,model_mode,learning_rate
 				###########################################################
 				print("###########################################################")
 			if sample_counter%10000==0:
-				print("Saving model...")
+				print("Saving model to:")
+				print(model_saved_name)
 				save_model({'epoch': cur_epoch,'state_dict': model.state_dict(),
 					'optimizer':optimizer.state_dict(),'trained_sample':sample_counter},
 					model_saved_name)
