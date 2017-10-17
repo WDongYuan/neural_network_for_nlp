@@ -121,11 +121,11 @@ def TrainModel(train_data,dev_data,word_em,D,load_model,model_mode,learning_rate
 	model_saved_name = ""
 	try:
 		model_saved_name = model.name+"_"+str(model.embedding_size)+"_"+str(model.hidden_size)+"_"\
-		+str(model.direction)+"_"+str(learning_rate)+"_"+pointer_type+"_"+model.layer+".save"
+		+str(model.direction)+"_"+str(learning_rate)+"_"+pointer_type+"_"+str(model.layer)+".save"
 	except:
 		# print(str(e))
 		model_saved_name = "model1_"+str(model.embedding_size)+"_"+str(model.hidden_size)+"_"\
-		+str(model.direction)+"_"+str(learning_rate)+"_"+pointer_type+"_"+model.layer+".save"
+		+str(model.direction)+"_"+str(learning_rate)+"_"+pointer_type+"_"+str(model.layer)+".save"
 
 	cur_epoch = 0
 	trained_sample = 0
