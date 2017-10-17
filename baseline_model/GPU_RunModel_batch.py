@@ -19,6 +19,13 @@ from SoftmaxAttention import *
 import torch.backends.cudnn as cudnn
 ###########################################################
 def NewAccuracy(model,data,pointer_type):
+	embedding_size = D
+	epoch_num = 100
+	direction = 2
+	batch_size = 100
+	context_max_length = max([len(sample.context_token) for sample in data])
+	question_max_length = max([len(sample.question_token) for sample in data])
+	layer = 1
 	print("Predicting...")
 	test_context = [sample.context_token for sample in data]
 	test_question = [sample.question_token for sample in data]
@@ -288,7 +295,7 @@ def Predict(train_data,test_data,word_em,D,learning_rate,hidden_size,model_path,
 	batch_size = 100
 	context_max_length = max([len(sample.context_token) for sample in train_data])
 	question_max_length = max([len(sample.question_token) for sample in train_data])
-	layer = 2
+	layer = 1
 
 	# test_data = test_data[0:1000]
 
