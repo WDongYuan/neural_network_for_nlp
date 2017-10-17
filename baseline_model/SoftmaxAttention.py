@@ -36,8 +36,10 @@ class SoftmaxAttentionModel(nn.Module):
 
 		# self.word_embeddings = nn.Embedding(voc_size, embedding_size)
 		bidirectional_flag = True if self.direction==2 else False
-		self.passage_lstm = nn.LSTM(embedding_size, hidden_size,num_layers=self.layer,bidirectional=bidirectional_flag,batch_first=True)
-		self.question_lstm = nn.LSTM(embedding_size, hidden_size,num_layers=self.layer,bidirectional=bidirectional_flag,batch_first=True)
+		# self.passage_lstm = nn.LSTM(embedding_size, hidden_size,num_layers=self.layer,bidirectional=bidirectional_flag,batch_first=True)
+		# self.question_lstm = nn.LSTM(embedding_size, hidden_size,num_layers=self.layer,bidirectional=bidirectional_flag,batch_first=True)
+		self.passage_gru = nn.GRU(embedding_size, hidden_size,num_layers=self.layer,bidirectional=bidirectional_flag,batch_first=True)
+		self.question_gru = nn.GRU(embedding_size, hidden_size,num_layers=self.layer,bidirectional=bidirectional_flag,batch_first=True)
 
 		###########################################################
 		##Added later
@@ -80,8 +82,10 @@ class SoftmaxAttentionModel(nn.Module):
 		#lstm_out: (seq_len, batch, hidden_size * num_directions)
 		#hidden: (num_layers * num_directions, batch, hidden_size)
 		#c_n: (num_layers * num_directions, batch, hidden_size)
-		q_lstm_out, (self.q_hidden,self.q_c_n) = self.question_lstm(question_embedding,(self.q_hidden,self.q_c_n))
-		p_lstm_out, (self.p_hidden,self.p_c_n) = self.passage_lstm(passage_embedding, (self.p_hidden,self.p_c_n))
+		# q_lstm_out, (self.q_hidden,self.q_c_n) = self.question_lstm(question_embedding,(self.q_hidden,self.q_c_n))
+		# p_lstm_out, (self.p_hidden,self.p_c_n) = self.passage_lstm(passage_embedding, (self.p_hidden,self.p_c_n))
+		q_lstm_out, _ = self.question_gru(question_embedding,self.q_hidden)
+		p_lstm_out, _ = self.passage_gru(passage_embedding, self.p_hidden)
 
 		###########################################################
 		##Added later
