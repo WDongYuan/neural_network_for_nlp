@@ -114,8 +114,8 @@ def GetOrder(val,arr):
 	for i in range(len(arr)):
 		if arr[i]>val:
 			order += 1
-	print(arr)
-	print(len(arr))
+	# print(arr)
+	# print(len(arr))
 	return order
 def save_model(state, filename='saved_model.out'):
     torch.save(state, filename)
