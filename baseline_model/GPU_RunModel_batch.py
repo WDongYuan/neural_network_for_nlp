@@ -20,7 +20,6 @@ import torch.backends.cudnn as cudnn
 ###########################################################
 def NewAccuracy(model,data,pointer_type):
 	print("Predicting...")
-	data = test_data
 	test_context = [sample.context_token for sample in data]
 	test_question = [sample.question_token for sample in data]
 	start_acc = 0.0
@@ -190,7 +189,7 @@ def TrainModel(train_data,dev_data,word_em,D,load_model,model_mode,learning_rate
 		# print("Epoch "+str(epoch))
 
 		cur_epoch += 1
-		sample_counter = trained_sample
+		sample_counter = 0
 		trained_sample = 0
 
 		# total_loss = 0.0
@@ -261,7 +260,7 @@ def TrainModel(train_data,dev_data,word_em,D,load_model,model_mode,learning_rate
 				print("Time: "+str(time.time()-start_time))
 				start_time = time.time()
 				print("###########################################################")
-			if sample_counter%10000==0:
+			if sample_counter%1000==0:
 				print("Dev set performance")
 				###########################################################
 				NewAccuracy(model,dev_data,pointer_type)
